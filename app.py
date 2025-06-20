@@ -6,7 +6,9 @@ import json
 from scripts.explore_student_data import explore_student_data  # import your function
 
 app = FastAPI()
-
+@app.get("/")
+def root():
+    return {"message": "Service is running ✅"}
 @app.post("/analyze")
 async def analyze_csv(file: UploadFile = File(...)):
     try:
