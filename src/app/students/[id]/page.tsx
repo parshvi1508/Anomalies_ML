@@ -13,7 +13,6 @@ interface Student {
   email?: string;
   course?: string;
   enrollment_date?: string;
-  last_activity?: string;
   completion_rate?: number;
   avg_score?: number;
 }
@@ -26,25 +25,21 @@ interface PageProps {
 const RISK_CONFIG = {
   'Extreme Risk': {
     color: 'text-red-600 bg-red-50 border-red-200',
-    bgColor: 'bg-red-50',
     textColor: 'text-red-800',
     priority: 'Critical'
   },
   'High Risk': {
     color: 'text-orange-600 bg-orange-50 border-orange-200',
-    bgColor: 'bg-orange-50',
     textColor: 'text-orange-800',
     priority: 'High'
   },
   'Moderate Risk': {
     color: 'text-yellow-600 bg-yellow-50 border-yellow-200',
-    bgColor: 'bg-yellow-50',
     textColor: 'text-yellow-800',
     priority: 'Medium'
   },
   'Low Risk': {
     color: 'text-green-600 bg-green-50 border-green-200',
-    bgColor: 'bg-green-50',
     textColor: 'text-green-800',
     priority: 'Low'
   }

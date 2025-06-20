@@ -9,11 +9,11 @@ interface PythonAnalysisResult {
   overview?: {
     total_records: number;
     columns: string[];
-    missing_values: { [key: string]: number };
+    missing_values: Record<string, number>;
   };
-  statistics?: { [key: string]: any };
-  visualizations?: { [key: string]: any };
-  [key: string]: any;
+  statistics?: Record<string, string>;
+  visualizations?: Record<string, string>;
+  [key: string]: Record<string, string | number> | { total_records: number; columns: string[]; missing_values: Record<string, number> } | undefined;
 }
 
 export async function POST(request: NextRequest) {
