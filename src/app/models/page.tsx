@@ -44,11 +44,11 @@ const BestModelPage = () => {
           <div className="text-lg font-medium text-slate-700 mb-4">Metric Interpretation</div>
           <ul className="text-sm text-slate-600 space-y-2">
             <li><strong>Accuracy</strong>: % of total predictions that were correct. <span className="text-green-600">Higher is better</span>.</li>
-            <li><strong>Precision</strong>: Of predicted "at-risk" students, how many truly were. <span className="text-green-600">Higher is better</span>.</li>
+            <li><strong>Precision</strong>: Of predicted &quot;at-risk&quot; students, how many truly were. <span className="text-green-600">Higher is better</span>.</li>
             <li><strong>Specificity</strong>: % of "not at risk" students correctly identified. <span className="text-green-600">Higher is better</span>.</li>
             <li><strong>ROC AUC</strong>: Overall model discrimination ability across thresholds. <span className="text-green-600">Higher is better</span>.</li>
             <li><strong>Avg. Uncertainty</strong>: Confidence in predictions (0 = certain, 1 = confused). <span className="text-red-600">Lower is better</span>.</li>
-            <li><strong>Interval Coverage</strong>: % of samples where belief & plausibility differ. Indicates "gray area" where model is unsure. <span className="text-neutral-600">Moderate is ideal</span>.</li>
+            <li><strong>Interval Coverage</strong>: % of samples where belief &amp; plausibility differ. Indicates &quot;gray area&quot; where model is unsure. <span className="text-neutral-600">Moderate is ideal</span>.</li>
           </ul>
         </div>
 
