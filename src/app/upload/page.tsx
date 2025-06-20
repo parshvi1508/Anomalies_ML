@@ -38,7 +38,7 @@ export default function UploadPage() {
         formData.append('file', selectedFile)
         
         // Fixed: Changed from '/api/analyze' to '/api/analyze-python'
-        const response = await fetch('/api/analyze-python', {
+        const response = await fetch('https://anomalies-ml.onrender.com', {
           method: 'POST',
           body: formData
         })
