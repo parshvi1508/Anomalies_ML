@@ -69,7 +69,7 @@ export default function StudentListPage() {
   }, []);
 
   const filteredAndSortedStudents = useMemo(() => {
-    let filtered = students.filter(student => {
+    const filtered = students.filter(student => {
       const matchesSearch = student.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (student.name && student.name.toLowerCase().includes(searchTerm.toLowerCase()));
       const matchesRiskCategory = selectedRiskCategory === 'all' || student.riskCategory === selectedRiskCategory;
@@ -230,7 +230,7 @@ export default function StudentListPage() {
         <section aria-labelledby="studentList" className="bg-white rounded-lg shadow border">
           <div className="grid grid-cols-1 divide-y divide-gray-200">
             {filteredAndSortedStudents.map((student) => (
-              <Link key={student.id || Math.random()} href={`/students/${student.id}`}>
+              <Link key={student.id} href={`/students/${student.id}`}>
                 <div className="p-4 hover:bg-gray-50 transition-colors cursor-pointer">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-4">
