@@ -1,16 +1,9 @@
 'use client'
 
 import Image from 'next/image'
-import { BarChart3, PieChart } from 'lucide-react'
+import { PieChart } from 'lucide-react'
 
 const BestModelPage = () => {
-  const classificationReport = {
-    precision: [0.72, 0.67, 0.69],
-    recall: [0.99, 0.07, 0.53],
-    f1: [0.83, 0.12, 0.48],
-    support: [71, 29, 100],
-  }
-
   const riskDistribution = {
     'Low Risk': 163,
     'Moderate Risk': 28,

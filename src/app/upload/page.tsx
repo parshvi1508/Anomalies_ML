@@ -16,7 +16,7 @@ interface PythonAnalysisResult {
     boxplots: string
     gpa_vs_attendance: string
   }
-  chart_data: any
+  chart_data: unknown
 }
 
 export default function UploadPage() {

@@ -52,7 +52,7 @@ export interface AnalyticsResult {
   semesterData: Array<{ semester: number; avgGPA: number; avgAttendance: number; dropoutRate: number }>
   boxplotData: BoxplotData[]
   featureComparisons: Array<{ feature: string; dropout_avg: number; non_dropout_avg: number }>
-  histogramData?: any
+  histogramData?: unknown
 }
 
 export class DataProcessor {
@@ -62,14 +62,14 @@ export class DataProcessor {
         header: true,
         skipEmptyLines: true,
         dynamicTyping: true,
-        complete: (results: any) => {
+        complete: (results: unknown) => {
           if (results.errors.length > 0) {
             reject(results.errors)
           } else {
             resolve(results.data as StudentData[])
           }
         },
-        error: (error: any) => reject(error)
+        error: (error: unknown) => reject(error)
       })
     })
   }
@@ -240,7 +240,7 @@ export class DataProcessor {
     const nonDropoutStudents = students.filter(s => s.dropout === 0)
 
     const features = ['gpa', 'attendance', 'failed_courses', 'feedback_engagement', 'clicks_per_week']
-    const histogramData: any = {}
+    const histogramData: unknown = {}
 
     features.forEach(feature => {
       const ranges = this.createRanges(feature, students)

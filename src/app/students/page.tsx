@@ -43,7 +43,7 @@ export default function StudentListPage() {
         
         const data = await response.json();
         const formatted = Object.entries(data).flatMap(([category, list]) =>
-          (list as any[]).map((s: any) => ({
+          (list as any[]).map((s: unknown) => ({
             id: s.student_id || s.id,
             riskCategory: category.toLowerCase(),
             name: s.name || s.student_name,
@@ -63,7 +63,7 @@ export default function StudentListPage() {
   }, []);
 
   const filteredAndSortedStudents = useMemo(() => {
-    let filtered = students.filter(student => {
+    const filtered = students.filter(student => {
       const matchesSearch = student.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            (student.name && student.name.toLowerCase().includes(searchTerm.toLowerCase()));
       const matchesRiskCategory = selectedRiskCategory === 'all' || student.riskCategory === selectedRiskCategory;
