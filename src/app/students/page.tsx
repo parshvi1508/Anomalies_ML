@@ -16,20 +16,43 @@ interface ApiStudent {
   student_name?: string;
   last_active?: string;
   lastActive?: string;
+  risk_category?: string;
 }
 
 const riskCategoryColors = {
-  high: 'bg-red-100 text-red-800 border-red-200',
-  medium: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-  low: 'bg-green-100 text-green-800 border-green-200',
-  unknown: 'bg-gray-100 text-gray-800 border-gray-200'
+  'extreme risk': 'bg-red-100 text-red-800 border-red-200',
+  'high risk': 'bg-orange-100 text-orange-800 border-orange-200',
+  'moderate risk': 'bg-yellow-100 text-yellow-800 border-yellow-200',
+  'low risk': 'bg-green-100 text-green-800 border-green-200',
+  'high': 'bg-orange-100 text-orange-800 border-orange-200',
+  'medium': 'bg-yellow-100 text-yellow-800 border-yellow-200',
+  'low': 'bg-green-100 text-green-800 border-green-200',
+  'unknown': 'bg-gray-100 text-gray-800 border-gray-200'
 };
 
 const riskCategoryIcons = {
-  high: '🔴',
-  medium: '🟡',
-  low: '🟢',
-  unknown: '⚪'
+  'extreme risk': '🔴',
+  'high risk': '🟠',
+  'moderate risk': '🟡',
+  'low risk': '🟢',
+  'high': '🟠',
+  'medium': '🟡',
+  'low': '🟢',
+  'unknown': '⚪'
+};
+
+// Function to normalize risk category names
+const normalizeRiskCategory = (category: string): string => {
+  if (!category) return 'unknown';
+  const normalized = category.toLowerCase().trim();
+  
+  // Map various risk category formats to consistent names
+  if (normalized.includes('extreme')) return 'extreme risk';
+  if (normalized.includes('high')) return 'high risk';
+  if (normalized.includes('moderate') || normalized.includes('medium')) return 'moderate risk';
+  if (normalized.includes('low')) return 'low risk';
+  
+  return normalized;
 };
 
 export default function StudentListPage() {
@@ -48,15 +71,18 @@ export default function StudentListPage() {
         if (!response.ok) throw new Error(`Failed to fetch students: ${response.statusText}`);
 
         const data = await response.json();
+        console.log('API Response:', data); // Debug log to see actual data structure
+        
         const formatted = Object.entries(data).flatMap(([category, list]) =>
           (list as ApiStudent[]).map((s: ApiStudent) => ({
             id: s.student_id || s.id || '',
-            riskCategory: category.toLowerCase() || 'unknown',
+            riskCategory: normalizeRiskCategory(s.risk_category || category),
             name: s.name || s.student_name,
             lastActive: s.last_active || s.lastActive
           }))
         );
 
+        console.log('Formatted students:', formatted); // Debug log
         setStudents(formatted);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred while fetching students');
@@ -67,6 +93,12 @@ export default function StudentListPage() {
 
     fetchStudents();
   }, []);
+
+  // Get unique risk categories from actual data
+  const availableRiskCategories = useMemo(() => {
+    const categories = [...new Set(students.map(s => s.riskCategory))];
+    return categories.filter(cat => cat && cat !== 'unknown').sort();
+  }, [students]);
 
   const filteredAndSortedStudents = useMemo(() => {
     const filtered = students.filter(student => {
@@ -138,7 +170,9 @@ export default function StudentListPage() {
           <div className="text-2xl font-bold text-gray-900">{students.length}</div>
           <div className="text-sm text-gray-500">Total Students</div>
         </div>
-        {Object.entries(riskCategoryCounts).map(([category, count]) => (
+        {Object.entries(riskCategoryCounts)
+          .filter(([category]) => category !== 'unknown')
+          .map(([category, count]) => (
           <div key={category} className="bg-white rounded-lg shadow p-4 border">
             <div className="flex items-center gap-2">
               <span className="text-lg">
@@ -146,8 +180,8 @@ export default function StudentListPage() {
               </span>
               <div>
                 <div className="text-2xl font-bold text-gray-900">{count}</div>
-                <div className="text-sm text-gray-500">
-                  {category.charAt(0).toUpperCase() + category.slice(1)} Risk
+                <div className="text-sm text-gray-500 capitalize">
+                  {category}
                 </div>
               </div>
             </div>
@@ -173,23 +207,28 @@ export default function StudentListPage() {
             />
           </div>
 
-          <div>
-            <label htmlFor="riskFilter" className="block text-sm font-medium text-gray-700 mb-1">
-              Filter by Risk
-            </label>
-            <select
-              id="riskFilter"
-              aria-label="Filter by Risk Level"
-              value={selectedRiskCategory}
-              onChange={(e) => setSelectedRiskCategory(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="all">All</option>
-              <option value="low">Low</option>
-              <option value="medium">Medium</option>
-              <option value="high">High</option>
-            </select>
-          </div>
+          {/* Only show risk filter if we have risk categories */}
+          {availableRiskCategories.length > 0 && (
+            <div>
+              <label htmlFor="riskFilter" className="block text-sm font-medium text-gray-700 mb-1">
+                Filter by Risk
+              </label>
+              <select
+                id="riskFilter"
+                aria-label="Filter by Risk Level"
+                value={selectedRiskCategory}
+                onChange={(e) => setSelectedRiskCategory(e.target.value)}
+                className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="all">All Risk Levels</option>
+                {availableRiskCategories.map(category => (
+                  <option key={category} value={category} className="capitalize">
+                    {category}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
 
           <div>
             <label htmlFor="sort" className="block text-sm font-medium text-gray-700 mb-1">
@@ -255,7 +294,7 @@ export default function StudentListPage() {
                     </div>
                     <div className="flex items-center space-x-3">
                       <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border capitalize ${
                           riskCategoryColors[student.riskCategory as keyof typeof riskCategoryColors] ||
                           riskCategoryColors.unknown
                         }`}
@@ -263,7 +302,7 @@ export default function StudentListPage() {
                         <span className="mr-1">
                           {riskCategoryIcons[student.riskCategory as keyof typeof riskCategoryIcons] || '⚪'}
                         </span>
-                        {student.riskCategory.charAt(0).toUpperCase() + student.riskCategory.slice(1)} Risk
+                        {student.riskCategory}
                       </span>
                       <svg
                         className="w-5 h-5 text-gray-400"
