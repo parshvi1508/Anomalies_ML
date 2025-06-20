@@ -17,10 +17,6 @@ interface Student {
   avg_score?: number;
 }
 
-interface PageProps {
-  params: { id: string };
-}
-
 // Risk level configuration with colors and icons
 const RISK_CONFIG = {
   'Extreme Risk': {
@@ -130,7 +126,6 @@ function getRecommendations(category: Student['risk_category']) {
   return recommendations[category] || [];
 }
 
-// Utility function to get risk level description
 function getRiskDescription(category: Student['risk_category']) {
   const descriptions = {
     'Extreme Risk': 'Student requires immediate intervention and intensive support',
@@ -142,11 +137,9 @@ function getRiskDescription(category: Student['risk_category']) {
   return descriptions[category];
 }
 
-// Helper function to read student data
 async function getStudentData(studentId: string): Promise<Student | null> {
   const filePath = path.join(process.cwd(), 'uploads', 'student_data_with_risk.csv');
-  
-  // Check if file exists
+
   if (!fs.existsSync(filePath)) {
     console.error('Student data file not found:', filePath);
     return null;
@@ -175,13 +168,12 @@ async function getStudentData(studentId: string): Promise<Student | null> {
       });
   });
 }
+
 export default async function StudentPage({
   params,
 }: {
   params: { id: string };
-})
-
- {
+}) {
   try {
     const student = await getStudentData(params.id);
     
