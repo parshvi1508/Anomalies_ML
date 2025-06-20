@@ -22,35 +22,36 @@ const BestModelPage = () => {
         </div>
 
         {/* Summary Card */}
-<div className="bg-white shadow-xl border border-slate-200 rounded-xl p-6">
-  <div className="text-lg font-medium text-slate-700 mb-4">Model Summary</div>
-  <ul className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-sm text-slate-600">
-    <li><strong>Accuracy:</strong> 72.0%</li>
-    <li><strong>Precision:</strong> 66.7%</li>
-    <li><strong>Specificity:</strong> 98.6%</li>
-    <li><strong>ROC AUC:</strong> 0.44</li>
-    <li><strong>Avg. Uncertainty:</strong> 0.019</li>
-    <li><strong>Interval Coverage:</strong> 10.5%</li>
-  </ul>
-  <p className="mt-4 text-xs text-slate-500">
-    ⚠️ The model achieves high **specificity (98.6%)**, meaning it confidently avoids false alarms. 
-    <br />
-    ✅ A **low average uncertainty (0.019)** and a **well-calibrated belief score** ROC AUC suggest strong confidence in high-certainty zones—critical for decision-making in sensitive use-cases.
-  </p>
-</div>
+        <div className="bg-white shadow-xl border border-slate-200 rounded-xl p-6">
+          <div className="text-lg font-medium text-slate-700 mb-4">Model Summary</div>
+          <ul className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-sm text-slate-600">
+            <li><strong>Accuracy:</strong> 72.0%</li>
+            <li><strong>Precision:</strong> 66.7%</li>
+            <li><strong>Specificity:</strong> 98.6%</li>
+            <li><strong>ROC AUC:</strong> 0.44</li>
+            <li><strong>Avg. Uncertainty:</strong> 0.019</li>
+            <li><strong>Interval Coverage:</strong> 10.5%</li>
+          </ul>
+          <p className="mt-4 text-xs text-slate-500">
+            ⚠️ The model achieves high <strong>specificity (98.6%)</strong>, meaning it confidently avoids false alarms. 
+            <br />
+            ✅ A <strong>low average uncertainty (0.019)</strong> and a <strong>well-calibrated belief score</strong> ROC AUC suggest strong confidence in high-certainty zones—critical for decision-making in sensitive use-cases.
+          </p>
+        </div>
 
-{/* Explanation Card */}
-<div className="bg-slate-50 shadow border border-slate-200 rounded-xl p-6 mt-6">
-  <div className="text-lg font-medium text-slate-700 mb-4">Metric Interpretation</div>
-  <ul className="text-sm text-slate-600 space-y-2">
-    <li><strong>Accuracy</strong>: % of total predictions that were correct. <span className="text-green-600">Higher is better</span>.</li>
-    <li><strong>Precision</strong>: Of predicted "at-risk" students, how many truly were. <span className="text-green-600">Higher is better</span>.</li>
-    <li><strong>Specificity</strong>: % of "not at risk" students correctly identified. <span className="text-green-600">Higher is better</span>.</li>
-    <li><strong>ROC AUC</strong>: Overall model discrimination ability across thresholds. <span className="text-green-600">Higher is better</span>.</li>
-    <li><strong>Avg. Uncertainty</strong>: Confidence in predictions (0 = certain, 1 = confused). <span className="text-red-600">Lower is better</span>.</li>
-    <li><strong>Interval Coverage</strong>: % of samples where belief & plausibility differ. Indicates "gray area" where model is unsure. <span className="text-neutral-600">Moderate is ideal</span>.</li>
-  </ul>
-</div>
+        {/* Explanation Card */}
+        <div className="bg-slate-50 shadow border border-slate-200 rounded-xl p-6 mt-6">
+          <div className="text-lg font-medium text-slate-700 mb-4">Metric Interpretation</div>
+          <ul className="text-sm text-slate-600 space-y-2">
+            <li><strong>Accuracy</strong>: % of total predictions that were correct. <span className="text-green-600">Higher is better</span>.</li>
+            <li><strong>Precision</strong>: Of predicted "at-risk" students, how many truly were. <span className="text-green-600">Higher is better</span>.</li>
+            <li><strong>Specificity</strong>: % of "not at risk" students correctly identified. <span className="text-green-600">Higher is better</span>.</li>
+            <li><strong>ROC AUC</strong>: Overall model discrimination ability across thresholds. <span className="text-green-600">Higher is better</span>.</li>
+            <li><strong>Avg. Uncertainty</strong>: Confidence in predictions (0 = certain, 1 = confused). <span className="text-red-600">Lower is better</span>.</li>
+            <li><strong>Interval Coverage</strong>: % of samples where belief & plausibility differ. Indicates "gray area" where model is unsure. <span className="text-neutral-600">Moderate is ideal</span>.</li>
+          </ul>
+        </div>
+
         {/* Risk Distribution */}
         <div className="bg-white shadow-xl border border-slate-200 rounded-xl p-6">
           <div className="flex items-center space-x-2 mb-4">
@@ -74,7 +75,8 @@ const BestModelPage = () => {
             })}
           </div>
         </div>
-        {/*Anomalies Chart */}
+
+        {/* Anomalies Chart */}
         <div className="bg-white shadow-xl border border-slate-200 rounded-xl p-6">
           <h2 className="text-xl font-bold text-slate-800 mb-4">Anomalies Detected</h2>
           <Image
@@ -85,9 +87,10 @@ const BestModelPage = () => {
             className="rounded-lg border border-slate-200 mx-auto"
           />
         </div>
-        {/*Anomalies Chart */}
+
+        {/* Anomalies Chart */}
         <div className="bg-white shadow-xl border border-slate-200 rounded-xl p-6">
-          <h2 className="text-xl font-bold text-slate-800 mb-4">Anomalies </h2>
+          <h2 className="text-xl font-bold text-slate-800 mb-4">Anomalies</h2>
           <Image
             src="/anomaly2.png"
             alt="Anomalies Chart"
@@ -96,7 +99,6 @@ const BestModelPage = () => {
             className="rounded-lg border border-slate-200 mx-auto"
           />
         </div>
-
 
         {/* Belief-Plausibility Chart */}
         <div className="bg-white shadow-xl border border-slate-200 rounded-xl p-6">
@@ -109,7 +111,6 @@ const BestModelPage = () => {
             className="rounded-lg border border-slate-200 mx-auto"
           />
         </div>
-
       </div>
     </div>
   )

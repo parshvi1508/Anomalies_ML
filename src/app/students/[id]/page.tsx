@@ -3,7 +3,6 @@ import path from 'path';
 import fs from 'fs';
 import csv from 'csv-parser';
 import { notFound } from 'next/navigation';
-import { Suspense } from 'react';
 
 // Types for better type safety
 interface Student {
@@ -137,7 +136,7 @@ function getRecommendations(category: Student['risk_category']) {
 }
 
 // Utility function to get risk level description
-function getRiskDescription(category: Student['risk_category'], score: number) {
+function getRiskDescription(category: Student['risk_category']) {
   const descriptions = {
     'Extreme Risk': 'Student requires immediate intervention and intensive support',
     'High Risk': 'Student needs additional support and monitoring',
@@ -146,22 +145,6 @@ function getRiskDescription(category: Student['risk_category'], score: number) {
   };
   
   return descriptions[category];
-}
-
-// Loading component
-function StudentPageSkeleton() {
-  return (
-    <div className="max-w-4xl mx-auto p-6 animate-pulse">
-      <div className="h-8 bg-gray-200 rounded mb-4 w-1/3"></div>
-      <div className="h-16 bg-gray-200 rounded mb-6"></div>
-      <div className="h-6 bg-gray-200 rounded mb-4 w-1/4"></div>
-      <div className="space-y-3">
-        {[...Array(4)].map((_, i) => (
-          <div key={i} className="h-4 bg-gray-200 rounded"></div>
-        ))}
-      </div>
-    </div>
-  );
 }
 
 // Helper function to read student data
@@ -208,7 +191,7 @@ export default async function StudentPage({ params }: PageProps) {
 
     const riskConfig = RISK_CONFIG[student.risk_category];
     const recommendations = getRecommendations(student.risk_category);
-    const riskDescription = getRiskDescription(student.risk_category, student.risk_score);
+    const riskDescription = getRiskDescription(student.risk_category);
 
     return (
       <div className="max-w-4xl mx-auto p-6">
