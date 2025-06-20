@@ -175,8 +175,13 @@ async function getStudentData(studentId: string): Promise<Student | null> {
       });
   });
 }
+export default async function StudentPage({
+  params,
+}: {
+  params: { id: string };
+})
 
-export default async function StudentPage({ params }: PageProps) {
+ {
   try {
     const student = await getStudentData(params.id);
     
