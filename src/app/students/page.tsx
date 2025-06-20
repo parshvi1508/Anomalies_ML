@@ -9,6 +9,15 @@ interface Student {
   lastActive?: string;
 }
 
+interface ApiStudent {
+  student_id?: string;
+  id?: string;
+  name?: string;
+  student_name?: string;
+  last_active?: string;
+  lastActive?: string;
+}
+
 const riskCategoryColors = {
   high: 'bg-red-100 text-red-800 border-red-200',
   medium: 'bg-yellow-100 text-yellow-800 border-yellow-200',
@@ -43,8 +52,8 @@ export default function StudentListPage() {
         
         const data = await response.json();
         const formatted = Object.entries(data).flatMap(([category, list]) =>
-          (list as any[]).map((s: unknown) => ({
-            id: s.student_id || s.id,
+          (list as ApiStudent[]).map((s: ApiStudent) => ({
+            id: s.student_id || s.id || '',
             riskCategory: category.toLowerCase(),
             name: s.name || s.student_name,
             lastActive: s.last_active || s.lastActive
@@ -63,7 +72,7 @@ export default function StudentListPage() {
   }, []);
 
   const filteredAndSortedStudents = useMemo(() => {
-    const filtered = students.filter(student => {
+    let filtered = students.filter(student => {
       const matchesSearch = student.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            (student.name && student.name.toLowerCase().includes(searchTerm.toLowerCase()));
       const matchesRiskCategory = selectedRiskCategory === 'all' || student.riskCategory === selectedRiskCategory;
@@ -161,7 +170,22 @@ export default function StudentListPage() {
             />
           </div>
           
-          
+          <div>
+            <label htmlFor="riskFilter" className="block text-sm font-medium text-gray-700 mb-1">
+              Filter by Risk
+            </label>
+            <select
+              id="riskFilter"
+              value={selectedRiskCategory}
+              onChange={(e) => setSelectedRiskCategory(e.target.value)}
+              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="all">All Risk Levels</option>
+              <option value="low">Low Risk</option>
+              <option value="medium">Medium Risk</option>
+              <option value="high">High Risk</option>
+            </select>
+          </div>
           
           <div>
             <label htmlFor="sort" className="block text-sm font-medium text-gray-700 mb-1">
@@ -179,7 +203,7 @@ export default function StudentListPage() {
           </div>
         </div>
         
-        {searchTerm && (
+        {(searchTerm || selectedRiskCategory !== 'all') && (
           <div className="mt-3 text-sm text-gray-600">
             Showing {filteredAndSortedStudents.length} of {students.length} students
           </div>
