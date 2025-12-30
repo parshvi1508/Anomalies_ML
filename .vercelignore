@@ -1,4 +1,4 @@
-# Python files and directories
+# Python files and directories - DO NOT DEPLOY TO VERCEL
 *.py
 *.pyc
 __pycache__/
@@ -13,6 +13,7 @@ build/
 venv/
 env/
 ENV/
+.venv/
 
 # Python project files
 requirements.txt
@@ -20,26 +21,39 @@ runtime.txt
 .python-version
 app.py
 
-# Data and uploads
+# Data and uploads - Backend only
 data/
 uploads/
 temp/
 *.csv
 *.pkl
 *.joblib
+*.h5
+*.hdf5
 
-# Jupyter notebooks
+# Jupyter notebooks - Backend only
 *.ipynb
 reports/
+notebooks/
 
-# Scripts
+# Python scripts - Backend only
 scripts/
 recommender/
+*.sh
 
-# Documentation specific to Python deployment
+# Backend configuration
 render.yaml
+Procfile
+
+# Documentation for backend
 DEPLOYMENT-FIX.md
 VERCEL-ISSUE.md
+DEPLOYMENT-ANALYSIS.md
+OPTION-A-GUIDE.md
 
-# Keep only frontend files for Vercel
-# Next.js, TypeScript, and config files will be included by default
+# Python virtual environment
+**/venv/
+**/.venv/
+
+# Keep only Next.js frontend files
+# All TypeScript, React, and Next.js files will be included by default

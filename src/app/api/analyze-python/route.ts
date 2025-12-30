@@ -1,24 +1,9 @@
 // src/app/api/analyze-python/route.ts
 import { NextRequest, NextResponse } from 'next/server'
-import { spawn } from 'child_process'
-import fs from 'fs'
-import path from 'path'
 
-// Define interface for Python analysis results
-interface PythonAnalysisResult {
-  overview?: {
-    total_records: number;
-    columns: string[];
-    missing_values: Record<string, number>;
-  };
-  statistics?: Record<string, string>;
-  visualizations?: Record<string, string>;
-  [key: string]: Record<string, string | number> | { total_records: number; columns: string[]; missing_values: Record<string, number> } | undefined;
-}
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 export async function POST(request: NextRequest) {
-  let tempFilePath: string | null = null;
-  
   try {
     const formData = await request.formData()
     const file = formData.get('file') as File
@@ -28,6 +13,37 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate file type
+    if (!file.name.endsWith('.csv')) {
+      return NextResponse.json(
+        { error: 'Invalid file type. Please upload a CSV file.' },
+        { status: 400 }
+      )
+    }
+
+    // Proxy to backend
+    const backendFormData = new FormData();
+    backendFormData.append('file', file);
+
+    const response = await fetch(`${API_BASE_URL}/analyze`, {
+      method: 'POST',
+      body: backendFormData,
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ error: 'Backend analysis failed' }));
+      return NextResponse.json(error, { status: response.status });
+    }
+
+    const data = await response.json();
+    return NextResponse.json(data);
+  } catch (error) {
+    console.error('Error proxying analysis:', error)
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : 'Failed to analyze file' },
+      { status: 500 }
+    )
+  }
+}
     if (!file.name.toLowerCase().endsWith('.csv')) {
       return NextResponse.json({ error: 'Only CSV files are allowed' }, { status: 400 })
     }

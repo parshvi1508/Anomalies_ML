@@ -1,33 +1,15 @@
 // src/app/api/recommendations/route.ts
 import { NextRequest, NextResponse } from 'next/server'
-import { spawn } from 'child_process'
-import path from 'path'
 
-interface RecommendationRequest {
-  user_id: string
-  top_n?: number
-  explanation?: boolean
-  algorithm?: 'hybrid' | 'content-based' | 'collaborative'
-}
-
-// interface AtRiskRecommendationRequest {
-//   user_id: string
-//   risk_factors: {
-//     low_gpa?: boolean
-//     poor_attendance?: boolean
-//     low_engagement?: boolean
-//     failed_courses?: boolean
-//   }
-//   top_n?: number
-// }
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 /**
  * POST /api/recommendations
- * Get personalized course recommendations for a user
+ * Proxy to backend API for personalized course recommendations
  */
 export async function POST(request: NextRequest) {
   try {
-    const body: RecommendationRequest = await request.json()
+    const body = await request.json()
     
     if (!body.user_id) {
       return NextResponse.json(
@@ -36,22 +18,24 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const pythonScript = path.join(
-      process.cwd(),
-      'scripts',
-      'get_recommendations.py'
-    )
+    // Proxy to backend
+    const response = await fetch(`${API_BASE_URL}/api/recommendations`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+    });
 
-    const result = await executePythonRecommender(pythonScript, {
-      user_id: body.user_id,
-      top_n: body.top_n || 5,
-      explanation: body.explanation || false,
-      algorithm: body.algorithm || 'hybrid'
-    })
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ error: 'Backend request failed' }));
+      return NextResponse.json(error, { status: response.status });
+    }
 
-    return NextResponse.json(result)
+    const data = await response.json();
+    return NextResponse.json(data);
   } catch (error) {
-    console.error('Error getting recommendations:', error)
+    console.error('Error proxying recommendations:', error)
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Failed to get recommendations' },
       { status: 500 }
@@ -61,14 +45,13 @@ export async function POST(request: NextRequest) {
 
 /**
  * GET /api/recommendations?user_id=U001&top_n=5
- * Get recommendations via query parameters
+ * Proxy GET requests to backend
  */
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams
     const user_id = searchParams.get('user_id')
-    const top_n = parseInt(searchParams.get('top_n') || '5')
-    const explanation = searchParams.get('explanation') === 'true'
+    const top_n = searchParams.get('top_n') || '5'
 
     if (!user_id) {
       return NextResponse.json(
@@ -77,22 +60,22 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const pythonScript = path.join(
-      process.cwd(),
-      'scripts',
-      'get_recommendations.py'
-    )
+    // Proxy to backend
+    const url = new URL(`${API_BASE_URL}/api/recommendations`);
+    url.searchParams.set('user_id', user_id);
+    url.searchParams.set('top_n', top_n);
 
-    const result = await executePythonRecommender(pythonScript, {
-      user_id,
-      top_n,
-      explanation,
-      algorithm: 'hybrid'
-    })
+    const response = await fetch(url.toString());
 
-    return NextResponse.json(result)
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ error: 'Backend request failed' }));
+      return NextResponse.json(error, { status: response.status });
+    }
+
+    const data = await response.json();
+    return NextResponse.json(data);
   } catch (error) {
-    console.error('Error getting recommendations:', error)
+    console.error('Error proxying recommendations:', error)
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Failed to get recommendations' },
       { status: 500 }
