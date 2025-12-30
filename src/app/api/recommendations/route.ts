@@ -10,16 +10,16 @@ interface RecommendationRequest {
   algorithm?: 'hybrid' | 'content-based' | 'collaborative'
 }
 
-interface AtRiskRecommendationRequest {
-  user_id: string
-  risk_factors: {
-    low_gpa?: boolean
-    poor_attendance?: boolean
-    low_engagement?: boolean
-    failed_courses?: boolean
-  }
-  top_n?: number
-}
+// interface AtRiskRecommendationRequest {
+//   user_id: string
+//   risk_factors: {
+//     low_gpa?: boolean
+//     poor_attendance?: boolean
+//     low_engagement?: boolean
+//     failed_courses?: boolean
+//   }
+//   top_n?: number
+// }
 
 /**
  * POST /api/recommendations
@@ -140,7 +140,7 @@ function executePythonRecommender(
       try {
         const result = JSON.parse(stdout)
         resolve(result)
-      } catch (error) {
+      } catch {
         console.error('Failed to parse Python output:', stdout)
         reject(new Error('Invalid JSON response from Python script'))
       }

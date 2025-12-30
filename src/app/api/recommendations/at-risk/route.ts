@@ -98,7 +98,7 @@ function executePythonRecommender(
       try {
         const result = JSON.parse(stdout)
         resolve(result)
-      } catch (error) {
+      } catch {
         console.error('Failed to parse Python output:', stdout)
         reject(new Error('Invalid JSON response from Python script'))
       }

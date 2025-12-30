@@ -59,6 +59,7 @@ export default function RecommendationsPage() {
 
   useEffect(() => {
     fetchRecommendations()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const getDifficultyColor = (difficulty: string) => {
