@@ -1,0 +1,45 @@
+# Python files and directories
+*.py
+*.pyc
+__pycache__/
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+venv/
+env/
+ENV/
+
+# Python project files
+requirements.txt
+runtime.txt
+.python-version
+app.py
+
+# Data and uploads
+data/
+uploads/
+temp/
+*.csv
+*.pkl
+*.joblib
+
+# Jupyter notebooks
+*.ipynb
+reports/
+
+# Scripts
+scripts/
+recommender/
+
+# Documentation specific to Python deployment
+render.yaml
+DEPLOYMENT-FIX.md
+VERCEL-ISSUE.md
+
+# Keep only frontend files for Vercel
+# Next.js, TypeScript, and config files will be included by default
