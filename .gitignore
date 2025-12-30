@@ -9,14 +9,14 @@
 !.yarn/plugins
 !.yarn/releases
 !.yarn/versions
-
+venv/.lock
 # testing
 /coverage
-
+venv\Lib
 # next.js
 /.next/
 /out/
-
+venv
 # production
 /build
 
