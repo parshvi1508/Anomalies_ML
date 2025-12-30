@@ -1,0 +1,11 @@
+user_id,age_group,occupation,learning_mode_preference,learning_method,course_format,learning_pace,domain_interests,knowledge_level,cost_preference,duration_preference,platform_features_preferred,importance_of_reviews,preferred_platforms
+U001,18-24,Student,Online,Visual Practical,Self-paced,Moderate,Programming Data Science,Beginner,Free,Short (1-4 weeks),Interactive quizzes Video content,Very Important,Coursera Udemy
+U002,25-34,Working Professional,Hybrid,Reading Hands-on,Instructor-led,Fast,Marketing Business,Intermediate,Paid,Medium (5-8 weeks),Live sessions Certificates,Important,edX Skillshare
+U003,35-44,Working Professional,Online,Practical Projects,Blended,Moderate,Cloud Computing DevOps,Advanced,Paid,Long (9+ weeks),Hands-on labs Industry projects,Very Important,Udacity AWS Training
+U004,18-24,Student,Online,Visual Practical,Self-paced,Slow,Web Development Design,Beginner,Free,Short (1-4 weeks),Code playground Peer forums,Somewhat Important,Skillshare Udemy
+U005,25-34,Entrepreneur,Hybrid,Reading Case Studies,Instructor-led,Fast,Business Leadership,Intermediate,Paid,Medium (5-8 weeks),Networking Case studies,Very Important,Coursera edX
+U006,35-44,Working Professional,Online,Hands-on Projects,Blended,Fast,Data Science Machine Learning,Advanced,Paid,Long (9+ weeks),Jupyter notebooks Real datasets,Very Important,Coursera Udacity
+U007,18-24,Student,Online,Visual Lectures,Self-paced,Moderate,Cybersecurity Networking,Beginner,Free,Medium (5-8 weeks),Virtual labs Simulations,Important,Google Digital Garage Udemy
+U008,45-54,Career Changer,Hybrid,Practical Mentorship,Instructor-led,Slow,Project Management,Intermediate,Paid,Long (9+ weeks),Mentorship Mock exams,Very Important,Coursera PMI
+U009,25-34,Working Professional,Online,Reading Practical,Self-paced,Fast,Finance Investing,Intermediate,Paid,Short (1-4 weeks),Financial tools Templates,Somewhat Important,Udemy Coursera
+U010,18-24,Student,Online,Visual Hands-on,Blended,Moderate,Game Development,Beginner,Paid,Medium (5-8 weeks),Game engine access Community,Important,Udacity Unity Learn

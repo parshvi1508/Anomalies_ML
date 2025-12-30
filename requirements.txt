@@ -7,3 +7,5 @@ matplotlib
 seaborn
 python-multipart
 scikit-learn
+scikit-surprise
+scipy

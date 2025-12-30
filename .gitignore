@@ -9,14 +9,21 @@
 !.yarn/plugins
 !.yarn/releases
 !.yarn/versions
+
+# Python virtual environment
+venv
+# Python virtual environment
+venv
 venv/.lock
+venv\Lib
+
 # testing
 /coverage
-venv\Lib
+
 # next.js
 /.next/
 /out/
-venv
+
 # production
 /build
 
