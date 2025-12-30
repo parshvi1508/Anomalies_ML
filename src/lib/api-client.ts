@@ -3,10 +3,8 @@
  * Central configuration for backend API calls
  */
 
-// Get API base URL from environment variable or use localhost for development
-export const API_BASE_URL = 
-  process.env.NEXT_PUBLIC_API_URL || 
-  'http://localhost:8000';
+// Backend API URL
+export const API_BASE_URL = 'https://anomalies-ml.onrender.com';
 
 /**
  * API Endpoints

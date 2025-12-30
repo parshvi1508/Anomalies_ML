@@ -1,7 +1,7 @@
 // src/app/api/analyze-python/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_BASE_URL = 'https://anomalies-ml.onrender.com';
 
 export async function POST(request: NextRequest) {
   try {
