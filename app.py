@@ -321,53 +321,7 @@ async def get_students():
                 return min(score, 100)
             
             df['risk_score'] = df.apply(calculate_risk_score, axis=1)
-            
-            if model_cache and model_cache.models:
-                logger.info("Calculating risk scores using ML model...")
-                risk_scores = []
-                dropout_model = model_cache.models.get('dropout')  # Changed from 'dropout_model'
-                metadata = model_cache.models.get('metadata', {})
-                feature_names = metadata.get('feature_names', [])
-                
-                for _, row in df.iterrows():
-                    try:
-                        # Use actual features from the model
-                        if feature_names:
-                            input_data = {feat: float(row.get(feat, 0)) for feat in feature_names if feat in df.columns}
-                        else:
-                            # Fallback to known features
-                            input_data = {
-                                'gpa': float(row.get('gpa', 3.0)),
-                                'attendance': float(row.get('attendance', 85.0)),
-                                'failed_courses': int(row.get('failed_courses', 0)),
-                                'feedback_engagement': float(row.get('feedback_engagement', 50.0)),
-                                'late_assignments': int(row.get('late_assignments', 0)),
-                                'forum_participation': int(row.get('forum_participation', 3)),
-                                'meeting_attendance': float(row.get('meeting_attendance', 75.0)),
-                                'study_group': int(row.get('study_group', 1)),
-                                'semester': int(row.get('semester', 4)),
-                                'prev_gpa': float(row.get('prev_gpa', 3.0)),
-                                'days_active': int(row.get('days_active', 5)),
-                                'clicks_per_week': int(row.get('clicks_per_week', 10)),
-                                'assessments_submitted': int(row.get('assessments_submitted', 5)),
-                                'previous_attempts': int(row.get('previous_attempts', 0)),
-                                'studied_credits': int(row.get('studied_credits', 20))
-                            }
-                        
-                        input_df = pd.DataFrame([input_data])
-                        if dropout_model:
-                            dropout_prob = dropout_model.predict_proba(input_df)[0][1]
-                            risk_scores.append(round(dropout_prob * 100, 1))
-                        else:
-                            risk_scores.append(50.0)
-                    except Exception as e:
-                        logger.warning(f"Error calculating risk for student: {e}")
-                        risk_scores.append(50.0)
-                
-                df['risk_score'] = risk_scores
-            else:
-                logger.warning("No dropout column or model available")
-                df['risk_score'] = 50.0
+            logger.info(f"Calculated risk scores. Min: {df['risk_score'].min()}, Max: {df['risk_score'].max()}, Mean: {df['risk_score'].mean():.1f}")
         
         # Add risk categories based on actual scores
         if 'risk_category' not in df.columns:
