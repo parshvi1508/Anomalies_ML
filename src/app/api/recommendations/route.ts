@@ -45,13 +45,14 @@ export async function POST(request: NextRequest) {
 
 /**
  * GET /api/recommendations?user_id=U001&top_n=5
- * Proxy GET requests to backend
+ * Convert GET to POST for backend compatibility
  */
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams
     const user_id = searchParams.get('user_id')
-    const top_n = searchParams.get('top_n') || '5'
+    const top_n = parseInt(searchParams.get('top_n') || '5')
+    const explanation = searchParams.get('explanation') === 'true'
 
     if (!user_id) {
       return NextResponse.json(
@@ -60,12 +61,19 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Proxy to backend
-    const url = new URL(`${API_BASE_URL}/api/recommendations`);
-    url.searchParams.set('user_id', user_id);
-    url.searchParams.set('top_n', top_n);
-
-    const response = await fetch(url.toString());
+    // Convert GET to POST request for backend
+    const response = await fetch(`${API_BASE_URL}/api/recommendations`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        user_id,
+        top_n,
+        explanation,
+        algorithm: 'hybrid'
+      }),
+    });
 
     if (!response.ok) {
       const error = await response.json().catch(() => ({ error: 'Backend request failed' }));

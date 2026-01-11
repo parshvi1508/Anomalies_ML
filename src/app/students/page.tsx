@@ -73,14 +73,31 @@ export default function StudentListPage() {
         const data = await response.json();
         console.log('API Response:', data); // Debug log to see actual data structure
         
-        const formatted = Object.entries(data).flatMap(([category, list]) =>
-          (list as ApiStudent[]).map((s: ApiStudent) => ({
-            id: s.student_id || s.id || '',
-            riskCategory: normalizeRiskCategory(s.risk_category || category),
-            name: s.name || s.student_name,
-            lastActive: s.last_active || s.lastActive
-          }))
-        );
+        // Handle backend response format: { success: true, students: [...] }
+        let studentsArray = [];
+        
+        if (Array.isArray(data)) {
+          // Direct array response
+          studentsArray = data;
+        } else if (data.students && Array.isArray(data.students)) {
+          // Backend format: { success: true, students: [...] }
+          studentsArray = data.students;
+        } else if (typeof data === 'object' && !data.students) {
+          // Grouped by category format: { "High Risk": [...], "Low Risk": [...] }
+          studentsArray = Object.entries(data).flatMap(([category, list]) =>
+            (list as ApiStudent[]).map((s: ApiStudent) => ({
+              ...s,
+              risk_category: s.risk_category || category
+            }))
+          );
+        }
+        
+        const formatted = studentsArray.map((s: ApiStudent) => ({
+          id: s.student_id || s.id || '',
+          riskCategory: normalizeRiskCategory(s.risk_category || 'unknown'),
+          name: s.name || s.student_name,
+          lastActive: s.last_active || s.lastActive
+        }));
 
         console.log('Formatted students:', formatted); // Debug log
         setStudents(formatted);
