@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 from typing import Optional, Dict, Any, List
+from pathlib import Path
 import pandas as pd
 import numpy as np
 import io
@@ -216,6 +217,100 @@ async def analyze_csv(file: UploadFile = File(...)):
         return JSONResponse(content=results)
     except Exception as e:
         return JSONResponse(content={"error": str(e)}, status_code=500)
+
+@app.get("/api/students")
+async def get_students():
+    """Get all students with risk predictions from uploaded data"""
+    try:
+        # Try to load the most recent uploaded file
+        upload_paths = [
+            Path("./uploads/student_data_with_risk.csv"),
+            Path("./uploads/student_data.csv"),
+            Path("/tmp/uploads/student_data_with_risk.csv"),
+            Path("/tmp/uploads/student_data.csv")
+        ]
+        
+        df = None
+        for path in upload_paths:
+            if path.exists():
+                df = pd.read_csv(path)
+                logger.info(f"Loaded student data from {path}")
+                break
+        
+        if df is None:
+            return JSONResponse(
+                content={"error": "No student data available. Please upload a CSV file first."},
+                status_code=404
+            )
+        
+        # Ensure we have required columns
+        if 'student_id' not in df.columns:
+            df['student_id'] = [f"S{i:04d}" for i in range(len(df))]
+        
+        # Calculate risk scores if not present
+        if 'risk_score' not in df.columns and model_cache and model_cache.models:
+            risk_scores = []
+            for _, row in df.iterrows():
+                try:
+                    # Create prediction input
+                    input_data = {
+                        'gpa': float(row.get('gpa', 3.0)),
+                        'attendance': float(row.get('attendance', 85.0)),
+                        'failed_courses': int(row.get('failed_courses', 0)),
+                        'feedback_engagement': float(row.get('feedback_engagement', 50.0)),
+                        'late_assignments': int(row.get('late_assignments', 0)),
+                        'forum_participation': int(row.get('forum_participation', 3)),
+                        'meeting_attendance': float(row.get('meeting_attendance', 75.0)),
+                        'study_group': int(row.get('study_group', 1))
+                    }
+                    
+                    input_df = pd.DataFrame([input_data])
+                    dropout_model = model_cache.models.get('dropout_model')
+                    if dropout_model:
+                        dropout_prob = dropout_model.predict_proba(input_df)[0][1]
+                        risk_scores.append(round(dropout_prob * 100, 1))
+                    else:
+                        risk_scores.append(50.0)
+                except:
+                    risk_scores.append(50.0)
+            
+            df['risk_score'] = risk_scores
+        
+        # Add risk categories
+        if 'risk_category' not in df.columns:
+            df['risk_category'] = df.get('risk_score', 50).apply(
+                lambda x: 'Extreme Risk' if x >= 75 else 
+                         'High Risk' if x >= 50 else 
+                         'Moderate Risk' if x >= 25 else 
+                         'Low Risk'
+            )
+        
+        # Select relevant columns for display
+        display_columns = ['student_id', 'gpa', 'attendance', 'failed_courses', 
+                          'risk_score', 'risk_category']
+        available_columns = [col for col in display_columns if col in df.columns]
+        
+        students_data = df[available_columns].head(100).to_dict(orient='records')
+        
+        # Clean NaN values
+        for student in students_data:
+            for key, value in student.items():
+                if pd.isna(value):
+                    student[key] = None
+        
+        return JSONResponse(content={
+            "success": True,
+            "students": students_data,
+            "total_count": len(df),
+            "displayed_count": len(students_data)
+        })
+        
+    except Exception as e:
+        logger.error(f"Error fetching students: {str(e)}")
+        return JSONResponse(
+            content={"error": f"Failed to load student data: {str(e)}"},
+            status_code=500
+        )
 
 @app.post("/predict")
 async def predict_dropout(data: StudentData):

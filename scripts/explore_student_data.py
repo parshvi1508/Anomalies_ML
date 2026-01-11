@@ -115,8 +115,53 @@ def explore_student_data(df):
         results['plots']['feature_distributions'] = f"data:image/png;base64,{base64.b64encode(img_buffer.getvalue()).decode()}"
         plt.close()
         
-        # Create placeholder plots for compatibility
-        results['plots']['boxplots'] = results['plots']['feature_distributions']
+        # 3. Create simple boxplots (different from distributions)
+        print("⚡ Generating boxplots...")
+        fig, axes = plt.subplots(1, 2, figsize=(10, 4))
+        if len(features_to_plot) >= 2:
+            for i, feature in enumerate(features_to_plot[:2]):
+                if feature in df_viz.columns:
+                    df_viz.boxplot(column=feature, by='dropout', ax=axes[i])
+                    axes[i].set_title(f'{feature.replace("_", " ").title()}')
+                    axes[i].set_xlabel('Dropout Status')
+        plt.suptitle('Boxplot Comparison', fontsize=12, fontweight='bold')
+        plt.tight_layout()
+        
+        img_buffer = io.BytesIO()
+        plt.savefig(img_buffer, format='png', dpi=80, bbox_inches='tight')
+        img_buffer.seek(0)
+        results['plots']['boxplots'] = f"data:image/png;base64,{base64.b64encode(img_buffer.getvalue()).decode()}"
+        plt.close()
+        
+        # 4. Simple scatter plot
+        print("⚡ Generating scatter plot...")
+        if len(features_to_plot) >= 2:
+            fig, ax = plt.subplots(figsize=(8, 5))
+            for dropout_val in [0, 1]:
+                mask = df_viz['dropout'] == dropout_val
+                ax.scatter(df_viz[mask][features_to_plot[0]], 
+                          df_viz[mask][features_to_plot[1]],
+                          alpha=0.5, s=20, 
+                          label='Dropout' if dropout_val else 'Enrolled')
+            ax.set_xlabel(features_to_plot[0].replace('_', ' ').title())
+            ax.set_ylabel(features_to_plot[1].replace('_', ' ').title())
+            ax.set_title('Feature Relationship', fontsize=12)
+            ax.legend()
+            ax.grid(alpha=0.3)
+            plt.tight_layout()
+            
+            img_buffer = io.BytesIO()
+            plt.savefig(img_buffer, format='png', dpi=80, bbox_inches='tight')
+            img_buffer.seek(0)
+            results['plots']['gpa_vs_attendance'] = f"data:image/png;base64,{base64.b64encode(img_buffer.getvalue()).decode()}"
+            plt.close()
+        else:
+            # Use correlation as fallback
+            results['plots']['gpa_vs_attendance'] = results['plots']['correlation_heatmap']
+    else:
+        # No dropout column - create basic plots
+        results['plots']['feature_distributions'] = results['plots']['correlation_heatmap']
+        results['plots']['boxplots'] = results['plots']['correlation_heatmap']
         results['plots']['gpa_vs_attendance'] = results['plots']['correlation_heatmap']
     
     return results
