@@ -298,13 +298,13 @@ if __name__ == "__main__":
     # Generate dataset
     df = generate_student_data(n_students=1200)
     
-    # Calculate risk scores
-    df = calculate_risk_metrics(df)
+    # Calculate risk scores for statistics ONLY (not saved to CSV)
+    df_with_risk = calculate_risk_metrics(df.copy())
     
-    # Print statistics
-    print_statistics(df)
+    # Print statistics using the risk-calculated version
+    print_statistics(df_with_risk)
     
-    # Save to CSV
+    # Save base dataset WITHOUT risk_score and risk_category (backend calculates these)
     output_path = 'data/comprehensive_student_data.csv'
     df.to_csv(output_path, index=False)
     print(f"\n✅ Dataset saved to: {output_path}")
@@ -338,5 +338,8 @@ if __name__ == "__main__":
         print(f"  {feature}")
     
     print("\n" + "="*70)
+    print("NOTE: risk_score and risk_category will be calculated by the backend.")
+    print("CSV contains only the 16 base features + dropout label (17 columns total).")
+    print("="*70)
     print("✨ Dataset generation complete! Ready for presentation.")
     print("="*70)
