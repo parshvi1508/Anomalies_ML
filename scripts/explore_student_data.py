@@ -12,6 +12,7 @@ warnings.filterwarnings('ignore')
 def explore_student_data(df):
     """
     Explore student data and generate visualizations exactly as specified.
+    OPTIMIZED: Samples large datasets and reduces DPI for faster processing.
     
     Parameters:
     -----------
@@ -34,9 +35,17 @@ def explore_student_data(df):
     print(f"- Total Features (excluding target): {total_features}")
     print(f"- Dropout Rate: {dropout_rate}%")
     
-    # Set style for all plots
+    # Sample large datasets for faster visualization (>500 rows)
+    if len(df) > 500:
+        print(f"Sampling 500 records from {len(df)} for faster visualization")
+        df_viz = df.sample(n=500, random_state=42)
+    else:
+        df_viz = df
+    
+    # Set style for all plots - optimized settings
     plt.style.use('default')
     sns.set_palette("husl")
+    plt.rcParams['figure.max_open_warning'] = 0  # Suppress warnings
     
     results = {
         'overview': {
@@ -48,10 +57,10 @@ def explore_student_data(df):
         'plots': {}
     }
     
-    # 1. Correlation Heatmap
-    plt.figure(figsize=(12, 10))
+    # 1. Correlation Heatmap (use sampled data for speed)
+    plt.figure(figsize=(10, 8))
     # Remove non-numeric columns for correlation
-    numeric_df = df.select_dtypes(include=[np.number])
+    numeric_df = df_viz.select_dtypes(include=[np.number])
     if 'student_id' in numeric_df.columns:
         numeric_df = numeric_df.drop(columns=['student_id'])
     
@@ -59,13 +68,13 @@ def explore_student_data(df):
     mask = np.triu(np.ones_like(corr_matrix, dtype=bool))
     
     sns.heatmap(corr_matrix, mask=mask, annot=False, cmap='coolwarm', 
-                center=0, square=True, linewidths=0.5, cbar_kws={"shrink": .8})
-    plt.title('Feature Correlation Heatmap', fontsize=16, fontweight='bold', pad=20)
+                center=0, square=True, linewidths=0.3, cbar_kws={"shrink": .8})
+    plt.title('Feature Correlation Heatmap', fontsize=14, fontweight='bold', pad=15)
     plt.tight_layout()
     
-    # Convert to base64
+    # Convert to base64 with reduced DPI (150->100) for faster processing
     img_buffer = io.BytesIO()
-    plt.savefig(img_buffer, format='png', dpi=150, bbox_inches='tight')
+    plt.savefig(img_buffer, format='png', dpi=100, bbox_inches='tight')
     img_buffer.seek(0)
     correlation_plot = base64.b64encode(img_buffer.getvalue()).decode()
     results['plots']['correlation_heatmap'] = f"data:image/png;base64,{correlation_plot}"
@@ -90,69 +99,69 @@ def explore_student_data(df):
                 numeric_cols.remove('student_id')
             features_to_plot = numeric_cols[:5]
         
-        fig, axes = plt.subplots(2, 3, figsize=(15, 10))
+        fig, axes = plt.subplots(2, 3, figsize=(14, 9))
         axes = axes.flatten()
         
         for i, feature in enumerate(features_to_plot[:6]):
-            if feature in df.columns:
-                sns.histplot(data=df, x=feature, hue='dropout', kde=True, ax=axes[i], alpha=0.7)
-                axes[i].set_title(f'{feature.replace("_", " ").title()} Distribution')
-                axes[i].legend(['No Dropout', 'Dropout'])
+            if feature in df_viz.columns:
+                sns.histplot(data=df_viz, x=feature, hue='dropout', kde=True, ax=axes[i], alpha=0.6, bins=20)
+                axes[i].set_title(f'{feature.replace("_", " ").title()} Distribution', fontsize=11)
+                axes[i].legend(['No Dropout', 'Dropout'], fontsize=9)
         
         # Hide empty subplots
         for i in range(len(features_to_plot), 6):
             axes[i].set_visible(False)
         
-        plt.suptitle('Feature Distributions by Dropout Status', fontsize=16, fontweight='bold')
+        plt.suptitle('Feature Distributions by Dropout Status', fontsize=14, fontweight='bold')
         plt.tight_layout()
         
         img_buffer = io.BytesIO()
-        plt.savefig(img_buffer, format='png', dpi=150, bbox_inches='tight')
+        plt.savefig(img_buffer, format='png', dpi=100, bbox_inches='tight')
         img_buffer.seek(0)
         distribution_plot = base64.b64encode(img_buffer.getvalue()).decode()
         results['plots']['feature_distributions'] = f"data:image/png;base64,{distribution_plot}"
         plt.close()
         
         # 3. Boxplots by Dropout Status
-        fig, axes = plt.subplots(2, 3, figsize=(15, 10))
+        fig, axes = plt.subplots(2, 3, figsize=(14, 9))
         axes = axes.flatten()
         
         for i, feature in enumerate(features_to_plot[:6]):
-            if feature in df.columns:
-                sns.boxplot(data=df, x='dropout', y=feature, ax=axes[i])
-                axes[i].set_title(f'{feature.replace("_", " ").title()} by Dropout Status')
-                axes[i].set_xlabel('Dropout Status')
+            if feature in df_viz.columns:
+                sns.boxplot(data=df_viz, x='dropout', y=feature, ax=axes[i])
+                axes[i].set_title(f'{feature.replace("_", " ").title()} by Dropout Status', fontsize=11)
+                axes[i].set_xlabel('Dropout Status', fontsize=9)
         
         # Hide empty subplots
         for i in range(len(features_to_plot), 6):
             axes[i].set_visible(False)
         
-        plt.suptitle('Boxplot Analysis by Dropout Status', fontsize=16, fontweight='bold')
+        plt.suptitle('Boxplot Analysis by Dropout Status', fontsize=14, fontweight='bold')
         plt.tight_layout()
         
         img_buffer = io.BytesIO()
-        plt.savefig(img_buffer, format='png', dpi=150, bbox_inches='tight')
+        plt.savefig(img_buffer, format='png', dpi=100, bbox_inches='tight')
         img_buffer.seek(0)
         boxplot_plot = base64.b64encode(img_buffer.getvalue()).decode()
         results['plots']['boxplots'] = f"data:image/png;base64,{boxplot_plot}"
         plt.close()
         
         # 4. GPA vs Attendance Scatter Plot (or substitute with available features)
-        x_feature = 'gpa' if 'gpa' in df.columns else features_to_plot[0] if features_to_plot else 'dropout'
-        y_feature = 'attendance' if 'attendance' in df.columns else features_to_plot[1] if len(features_to_plot) > 1 else 'dropout'
+        x_feature = 'gpa' if 'gpa' in df_viz.columns else features_to_plot[0] if features_to_plot else 'dropout'
+        y_feature = 'attendance' if 'attendance' in df_viz.columns else features_to_plot[1] if len(features_to_plot) > 1 else 'dropout'
         
         if x_feature != 'dropout' and y_feature != 'dropout':
             plt.figure(figsize=(10, 6))
-            sns.scatterplot(data=df, x=x_feature, y=y_feature, hue='dropout', alpha=0.7, s=50)
+            sns.scatterplot(data=df_viz, x=x_feature, y=y_feature, hue='dropout', alpha=0.6, s=30)
             plt.title(f'{x_feature.replace("_", " ").title()} vs {y_feature.replace("_", " ").title()}', 
-                     fontsize=16, fontweight='bold')
-            plt.xlabel(x_feature.replace("_", " ").title())
-            plt.ylabel(y_feature.replace("_", " ").title())
-            plt.legend(['No Dropout', 'Dropout'])
+                     fontsize=14, fontweight='bold')
+            plt.xlabel(x_feature.replace("_", " ").title(), fontsize=11)
+            plt.ylabel(y_feature.replace("_", " ").title(), fontsize=11)
+            plt.legend(['No Dropout', 'Dropout'], fontsize=9)
             plt.tight_layout()
             
             img_buffer = io.BytesIO()
-            plt.savefig(img_buffer, format='png', dpi=150, bbox_inches='tight')
+            plt.savefig(img_buffer, format='png', dpi=100, bbox_inches='tight')
             img_buffer.seek(0)
             scatter_plot = base64.b64encode(img_buffer.getvalue()).decode()
             results['plots']['gpa_vs_attendance'] = f"data:image/png;base64,{scatter_plot}"
