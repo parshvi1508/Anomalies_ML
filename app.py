@@ -253,49 +253,57 @@ async def get_students():
             df['student_id'] = [f"S{i:04d}" for i in range(len(df))]
         
         # Calculate risk scores if not present using the actual model
-        if 'risk_score' not in df.columns and model_cache and model_cache.models:
-            logger.info("Calculating risk scores using ML model...")
-            risk_scores = []
-            dropout_model = model_cache.models.get('dropout')  # Changed from 'dropout_model'
-            metadata = model_cache.models.get('metadata', {})
-            feature_names = metadata.get('feature_names', [])
-            
-            for _, row in df.iterrows():
-                try:
-                    # Use actual features from the model
-                    if feature_names:
-                        input_data = {feat: float(row.get(feat, 0)) for feat in feature_names if feat in df.columns}
-                    else:
-                        # Fallback to known features
-                        input_data = {
-                            'gpa': float(row.get('gpa', 3.0)),
-                            'attendance': float(row.get('attendance', 85.0)),
-                            'failed_courses': int(row.get('failed_courses', 0)),
-                            'feedback_engagement': float(row.get('feedback_engagement', 50.0)),
-                            'late_assignments': int(row.get('late_assignments', 0)),
-                            'forum_participation': int(row.get('forum_participation', 3)),
-                            'meeting_attendance': float(row.get('meeting_attendance', 75.0)),
-                            'study_group': int(row.get('study_group', 1)),
-                            'semester': int(row.get('semester', 4)),
-                            'prev_gpa': float(row.get('prev_gpa', 3.0)),
-                            'days_active': int(row.get('days_active', 5)),
-                            'clicks_per_week': int(row.get('clicks_per_week', 10)),
-                            'assessments_submitted': int(row.get('assessments_submitted', 5)),
-                            'previous_attempts': int(row.get('previous_attempts', 0)),
-                            'studied_credits': int(row.get('studied_credits', 20))
-                        }
-                    
-                    input_df = pd.DataFrame([input_data])
-                    if dropout_model:
-                        dropout_prob = dropout_model.predict_proba(input_df)[0][1]
-                        risk_scores.append(round(dropout_prob * 100, 1))
-                    else:
+        if 'risk_score' not in df.columns:
+            # If we have dropout column, use it directly (0-100 scale)
+            if 'dropout' in df.columns:
+                logger.info("Using dropout column from CSV for risk scores...")
+                df['risk_score'] = df['dropout'].apply(lambda x: 75.0 if x == 1 else 15.0)
+            elif model_cache and model_cache.models:
+                logger.info("Calculating risk scores using ML model...")
+                risk_scores = []
+                dropout_model = model_cache.models.get('dropout')  # Changed from 'dropout_model'
+                metadata = model_cache.models.get('metadata', {})
+                feature_names = metadata.get('feature_names', [])
+                
+                for _, row in df.iterrows():
+                    try:
+                        # Use actual features from the model
+                        if feature_names:
+                            input_data = {feat: float(row.get(feat, 0)) for feat in feature_names if feat in df.columns}
+                        else:
+                            # Fallback to known features
+                            input_data = {
+                                'gpa': float(row.get('gpa', 3.0)),
+                                'attendance': float(row.get('attendance', 85.0)),
+                                'failed_courses': int(row.get('failed_courses', 0)),
+                                'feedback_engagement': float(row.get('feedback_engagement', 50.0)),
+                                'late_assignments': int(row.get('late_assignments', 0)),
+                                'forum_participation': int(row.get('forum_participation', 3)),
+                                'meeting_attendance': float(row.get('meeting_attendance', 75.0)),
+                                'study_group': int(row.get('study_group', 1)),
+                                'semester': int(row.get('semester', 4)),
+                                'prev_gpa': float(row.get('prev_gpa', 3.0)),
+                                'days_active': int(row.get('days_active', 5)),
+                                'clicks_per_week': int(row.get('clicks_per_week', 10)),
+                                'assessments_submitted': int(row.get('assessments_submitted', 5)),
+                                'previous_attempts': int(row.get('previous_attempts', 0)),
+                                'studied_credits': int(row.get('studied_credits', 20))
+                            }
+                        
+                        input_df = pd.DataFrame([input_data])
+                        if dropout_model:
+                            dropout_prob = dropout_model.predict_proba(input_df)[0][1]
+                            risk_scores.append(round(dropout_prob * 100, 1))
+                        else:
+                            risk_scores.append(50.0)
+                    except Exception as e:
+                        logger.warning(f"Error calculating risk for student: {e}")
                         risk_scores.append(50.0)
-                except Exception as e:
-                    logger.warning(f"Error calculating risk for student: {e}")
-                    risk_scores.append(50.0)
-            
-            df['risk_score'] = risk_scores
+                
+                df['risk_score'] = risk_scores
+            else:
+                logger.warning("No dropout column or model available")
+                df['risk_score'] = 50.0
         
         # Add risk categories based on actual scores
         if 'risk_category' not in df.columns:
@@ -375,33 +383,37 @@ async def get_student_by_id(student_id: str):
         
         # Calculate risk score if not present
         if 'risk_score' not in student_row or pd.isna(student_row['risk_score']):
-            dropout_model = model_cache.models.get('dropout') if model_cache else None  # Changed from 'dropout_model'
-            if dropout_model:
-                try:
-                    input_data = {
-                        'gpa': float(student_row.get('gpa', 3.0)),
-                        'attendance': float(student_row.get('attendance', 85.0)),
-                        'failed_courses': int(student_row.get('failed_courses', 0)),
-                        'feedback_engagement': float(student_row.get('feedback_engagement', 50.0)),
-                        'late_assignments': int(student_row.get('late_assignments', 0)),
-                        'forum_participation': int(student_row.get('forum_participation', 3)),
-                        'meeting_attendance': float(student_row.get('meeting_attendance', 75.0)),
-                        'study_group': int(student_row.get('study_group', 1)),
-                        'semester': int(student_row.get('semester', 4)),
-                        'prev_gpa': float(student_row.get('prev_gpa', 3.0)),
-                        'days_active': int(student_row.get('days_active', 5)),
-                        'clicks_per_week': int(student_row.get('clicks_per_week', 10)),
-                        'assessments_submitted': int(student_row.get('assessments_submitted', 5)),
-                        'previous_attempts': int(student_row.get('previous_attempts', 0)),
-                        'studied_credits': int(student_row.get('studied_credits', 20))
-                    }
-                    input_df = pd.DataFrame([input_data])
-                    dropout_prob = dropout_model.predict_proba(input_df)[0][1]
-                    student_row['risk_score'] = round(dropout_prob * 100, 1)
-                except:
-                    student_row['risk_score'] = 50.0
+            # If dropout column exists, use it directly
+            if 'dropout' in student_row and not pd.isna(student_row['dropout']):
+                student_row['risk_score'] = 75.0 if student_row['dropout'] == 1 else 15.0
             else:
-                student_row['risk_score'] = 50.0
+                dropout_model = model_cache.models.get('dropout') if model_cache else None  # Changed from 'dropout_model'
+                if dropout_model:
+                    try:
+                        input_data = {
+                            'gpa': float(student_row.get('gpa', 3.0)),
+                            'attendance': float(student_row.get('attendance', 85.0)),
+                            'failed_courses': int(student_row.get('failed_courses', 0)),
+                            'feedback_engagement': float(student_row.get('feedback_engagement', 50.0)),
+                            'late_assignments': int(student_row.get('late_assignments', 0)),
+                            'forum_participation': int(student_row.get('forum_participation', 3)),
+                            'meeting_attendance': float(student_row.get('meeting_attendance', 75.0)),
+                            'study_group': int(student_row.get('study_group', 1)),
+                            'semester': int(student_row.get('semester', 4)),
+                            'prev_gpa': float(student_row.get('prev_gpa', 3.0)),
+                            'days_active': int(student_row.get('days_active', 5)),
+                            'clicks_per_week': int(student_row.get('clicks_per_week', 10)),
+                            'assessments_submitted': int(student_row.get('assessments_submitted', 5)),
+                            'previous_attempts': int(student_row.get('previous_attempts', 0)),
+                            'studied_credits': int(student_row.get('studied_credits', 20))
+                        }
+                        input_df = pd.DataFrame([input_data])
+                        dropout_prob = dropout_model.predict_proba(input_df)[0][1]
+                        student_row['risk_score'] = round(dropout_prob * 100, 1)
+                    except:
+                        student_row['risk_score'] = 50.0
+                else:
+                    student_row['risk_score'] = 50.0
         
         # Add risk category
         risk_score = student_row.get('risk_score', 50)
