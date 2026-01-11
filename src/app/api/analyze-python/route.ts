@@ -20,22 +20,39 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Proxy to backend
+    // Proxy to backend with extended timeout
     const backendFormData = new FormData();
     backendFormData.append('file', file);
 
-    const response = await fetch(`${API_BASE_URL}/analyze`, {
-      method: 'POST',
-      body: backendFormData,
-    });
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 300000); // 5 minutes timeout
 
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({ error: 'Backend analysis failed' }));
-      return NextResponse.json(error, { status: response.status });
+    try {
+      const response = await fetch(`${API_BASE_URL}/analyze`, {
+        method: 'POST',
+        body: backendFormData,
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({ error: 'Backend analysis failed' }));
+        return NextResponse.json(error, { status: response.status });
+      }
+
+      const data = await response.json();
+      return NextResponse.json(data);
+    } catch (fetchError) {
+      clearTimeout(timeoutId);
+      if (fetchError instanceof Error && fetchError.name === 'AbortError') {
+        return NextResponse.json(
+          { error: 'Analysis timeout. File processing took too long.' },
+          { status: 504 }
+        );
+      }
+      throw fetchError;
     }
-
-    const data = await response.json();
-    return NextResponse.json(data);
   } catch (error) {
     console.error('Error proxying analysis:', error)
     return NextResponse.json(
