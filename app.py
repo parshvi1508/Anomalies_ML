@@ -227,12 +227,14 @@ async def analyze_csv(file: UploadFile = File(...)):
 async def get_students():
     """Get all students with risk predictions from uploaded data"""
     try:
-        # Try to load the most recent uploaded file
+        # Try to load the most recent uploaded file (prioritize files WITHOUT pre-calculated risk)
         upload_paths = [
-            Path("./uploads/student_data_with_risk.csv"),
             Path("./uploads/student_data.csv"),
-            Path("/tmp/uploads/student_data_with_risk.csv"),
-            Path("/tmp/uploads/student_data.csv")
+            Path("./uploads/student_data_comprehensive.csv"),
+            Path("/tmp/uploads/student_data.csv"),
+            Path("/tmp/uploads/student_data_comprehensive.csv"),
+            Path("./uploads/student_data_with_risk.csv"),
+            Path("/tmp/uploads/student_data_with_risk.csv")
         ]
         
         df = None
@@ -331,6 +333,9 @@ async def get_students():
                          'Moderate Risk' if x >= 25 else 
                          'Low Risk'
             )
+            logger.info(f"Risk category distribution: {df['risk_category'].value_counts().to_dict()}")
+        else:
+            logger.info(f"Using existing risk categories: {df['risk_category'].value_counts().to_dict()}")
         
         # Select relevant columns for display
         display_columns = ['student_id', 'gpa', 'attendance', 'failed_courses', 
@@ -344,6 +349,8 @@ async def get_students():
             for key, value in student.items():
                 if pd.isna(value):
                     student[key] = None
+        
+        logger.info(f"Returning {len(students_data)} students with categories: {set(s['risk_category'] for s in students_data)}")
         
         return JSONResponse(content={
             "success": True,
