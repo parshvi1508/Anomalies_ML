@@ -539,37 +539,38 @@ async def predict_dropout(data: StudentData):
         optimal_threshold = metadata.get('optimal_threshold', 0.342)
         dropout_prediction = int(dropout_proba >= optimal_threshold)
         
-        # ===== STEP 4: Dempster-Shafer Evidence Fusion =====
+        # ===== STEP 4: Dempster-Shafer Evidence Fusion with Dynamic Uncertainty =====
         try:
-            ds_combiner = model_cache.models['ds_combiner']
+            # Use DempsterShaferCombinationDynamic for instance-specific uncertainty
+            from utils.ds_combiner import DempsterShaferCombinationDynamic, expert_rule_score
+            ds_combiner_dynamic = DempsterShaferCombinationDynamic()
             
-            # Compute dynamic uncertainty
-            entropy = -np.sum([dropout_proba * np.log2(dropout_proba + 1e-10),
-                              (1-dropout_proba) * np.log2(1-dropout_proba + 1e-10)])
-            uncertainty = float(entropy / np.log2(2))
-            
-            # Convert to mass functions
-            m_anomaly = {
-                'non-dropout': (1 - anomaly_score) * (1 - uncertainty),
-                'dropout': anomaly_score * (1 - uncertainty),
-                'uncertainty': uncertainty
+            # Compute expert rule score from student data
+            student_dict = {
+                'gpa': data.gpa,
+                'attendance': data.attendance,
+                'failed_courses': data.failed_courses
             }
+            expert_score = expert_rule_score(student_dict)
             
-            m_classifier = {
-                'non-dropout': (1 - dropout_proba) * (1 - uncertainty),
-                'dropout': dropout_proba * (1 - uncertainty),
-                'uncertainty': uncertainty
-            }
+            # Combine evidence with dynamic uncertainty
+            belief, plausibility, uncertainty = ds_combiner_dynamic.combine_dynamic(
+                anomaly_score=anomaly_score,
+                clf_proba=dropout_proba,
+                expert_score=expert_score
+            )
             
-            # Simple Dempster combination (conflict normalization omitted for brevity)
-            belief = m_classifier['dropout']
-            plausibility = m_classifier['dropout'] + m_classifier['uncertainty']
+            # Compute individual uncertainties for transparency
+            u_anomaly = ds_combiner_dynamic.compute_dynamic_uncertainty(anomaly_score, 'anomaly')
+            u_classifier = ds_combiner_dynamic.compute_dynamic_uncertainty(dropout_proba, 'classifier')
+            u_expert = ds_combiner_dynamic.compute_dynamic_uncertainty(expert_score, 'expert')
             
         except Exception as e:
-            print(f"DS fusion warning: {str(e)}")
-            belief = dropout_proba
+            logger.warning(f"DS fusion warning: {str(e)}, using fallback")
+            belief = dropout_proba * 0.85
             plausibility = dropout_proba + 0.15
-            uncertainty = 0.15
+            uncertainty = plausibility - belief
+            u_anomaly = u_classifier = u_expert = 0.15
         
         # ===== STEP 5: Risk Tier Classification =====
         if plausibility >= 0.75:
@@ -587,18 +588,26 @@ async def predict_dropout(data: StudentData):
             "anomaly_detection": {
                 "score": round(anomaly_score, 4),
                 "is_anomaly": bool(is_anomaly),
-                "interpretation": "High" if is_anomaly else "Normal"
+                "interpretation": "High" if is_anomaly else "Normal",
+                "dynamic_uncertainty": round(u_anomaly, 4)
             },
             "dropout_prediction": {
                 "probability": round(dropout_proba, 4),
                 "prediction": "Dropout" if dropout_prediction else "Non-Dropout",
                 "threshold_used": optimal_threshold,
-                "confidence": round(abs(dropout_proba - 0.5) * 2, 4)
+                "confidence": round(abs(dropout_proba - 0.5) * 2, 4),
+                "dynamic_uncertainty": round(u_classifier, 4)
+            },
+            "expert_rules": {
+                "score": round(expert_score, 4),
+                "interpretation": "High Risk" if expert_score > 0.6 else "Moderate Risk" if expert_score > 0.3 else "Low Risk",
+                "dynamic_uncertainty": round(u_expert, 4)
             },
             "evidence_fusion": {
                 "belief": round(belief, 4),
                 "plausibility": round(plausibility, 4),
-                "uncertainty": round(plausibility - belief, 4)
+                "uncertainty": round(uncertainty, 4),
+                "fusion_method": "Dempster-Shafer with Dynamic Uncertainty"
             },
             "risk_assessment": {
                 "tier": risk_tier,
