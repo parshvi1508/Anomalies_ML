@@ -113,7 +113,7 @@ export default function StudentListPage() {
 
         console.log('API Response:', data);
         console.log('Formatted students:', formatted);
-        console.log('Risk categories found:', [...new Set(formatted.map(s => s.riskCategory))]);
+        console.log('Risk categories found:', [...new Set(formatted.map((s: Student) => s.riskCategory))]);
         setStudents(formatted);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred while fetching students');
