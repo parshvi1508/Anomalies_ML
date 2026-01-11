@@ -1,0 +1,59 @@
+# Python files and directories - DO NOT DEPLOY TO VERCEL
+*.py
+*.pyc
+__pycache__/
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+venv/
+env/
+ENV/
+.venv/
+
+# Python project files
+requirements.txt
+runtime.txt
+.python-version
+app.py
+
+# Data and uploads - Backend only
+data/
+uploads/
+temp/
+*.csv
+*.pkl
+*.joblib
+*.h5
+*.hdf5
+
+# Jupyter notebooks - Backend only
+*.ipynb
+reports/
+notebooks/
+
+# Python scripts - Backend only
+scripts/
+recommender/
+*.sh
+
+# Backend configuration
+render.yaml
+Procfile
+
+# Documentation for backend
+DEPLOYMENT-FIX.md
+VERCEL-ISSUE.md
+DEPLOYMENT-ANALYSIS.md
+OPTION-A-GUIDE.md
+
+# Python virtual environment
+**/venv/
+**/.venv/
+
+# Keep only Next.js frontend files
+# All TypeScript, React, and Next.js files will be included by default
