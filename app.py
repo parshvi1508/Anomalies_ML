@@ -254,11 +254,75 @@ async def get_students():
         
         # Calculate risk scores if not present using the actual model
         if 'risk_score' not in df.columns:
-            # If we have dropout column, use it directly (0-100 scale)
-            if 'dropout' in df.columns:
-                logger.info("Using dropout column from CSV for risk scores...")
-                df['risk_score'] = df['dropout'].apply(lambda x: 75.0 if x == 1 else 15.0)
-            elif model_cache and model_cache.models:
+            # Calculate comprehensive risk score based on multiple factors
+            logger.info("Calculating risk scores based on multiple factors...")
+            
+            def calculate_risk_score(row):
+                """Calculate risk score (0-100) based on multiple academic factors"""
+                score = 0
+                
+                # GPA contribution (0-25 points)
+                gpa = float(row.get('gpa', 3.0))
+                if gpa < 2.0:
+                    score += 25
+                elif gpa < 2.5:
+                    score += 18
+                elif gpa < 3.0:
+                    score += 10
+                else:
+                    score += 3
+                
+                # Attendance contribution (0-20 points)
+                attendance = float(row.get('attendance', 85.0))
+                if attendance < 60:
+                    score += 20
+                elif attendance < 75:
+                    score += 15
+                elif attendance < 85:
+                    score += 8
+                else:
+                    score += 2
+                
+                # Failed courses contribution (0-20 points)
+                failed = int(row.get('failed_courses', 0))
+                score += min(failed * 7, 20)
+                
+                # Late assignments contribution (0-15 points)
+                late = float(row.get('late_assignments', 0))
+                if late > 30:
+                    score += 15
+                elif late > 15:
+                    score += 10
+                elif late > 5:
+                    score += 5
+                
+                # Engagement contribution (0-10 points)
+                engagement = float(row.get('feedback_engagement', 50.0))
+                if engagement < 30:
+                    score += 10
+                elif engagement < 50:
+                    score += 6
+                elif engagement < 70:
+                    score += 3
+                
+                # Activity contribution (0-10 points)
+                days_active = int(row.get('days_active', 5))
+                if days_active < 3:
+                    score += 10
+                elif days_active < 5:
+                    score += 5
+                elif days_active < 6:
+                    score += 2
+                
+                # If dropout column exists, boost score for dropout=1
+                if 'dropout' in row and row['dropout'] == 1:
+                    score = max(score, 60)  # Ensure at least High Risk
+                
+                return min(score, 100)
+            
+            df['risk_score'] = df.apply(calculate_risk_score, axis=1)
+            
+            if model_cache and model_cache.models:
                 logger.info("Calculating risk scores using ML model...")
                 risk_scores = []
                 dropout_model = model_cache.models.get('dropout')  # Changed from 'dropout_model'
@@ -383,37 +447,67 @@ async def get_student_by_id(student_id: str):
         
         # Calculate risk score if not present
         if 'risk_score' not in student_row or pd.isna(student_row['risk_score']):
-            # If dropout column exists, use it directly
-            if 'dropout' in student_row and not pd.isna(student_row['dropout']):
-                student_row['risk_score'] = 75.0 if student_row['dropout'] == 1 else 15.0
+            # Calculate comprehensive risk score
+            score = 0
+            
+            # GPA contribution (0-25 points)
+            gpa = float(student_row.get('gpa', 3.0))
+            if gpa < 2.0:
+                score += 25
+            elif gpa < 2.5:
+                score += 18
+            elif gpa < 3.0:
+                score += 10
             else:
-                dropout_model = model_cache.models.get('dropout') if model_cache else None  # Changed from 'dropout_model'
-                if dropout_model:
-                    try:
-                        input_data = {
-                            'gpa': float(student_row.get('gpa', 3.0)),
-                            'attendance': float(student_row.get('attendance', 85.0)),
-                            'failed_courses': int(student_row.get('failed_courses', 0)),
-                            'feedback_engagement': float(student_row.get('feedback_engagement', 50.0)),
-                            'late_assignments': int(student_row.get('late_assignments', 0)),
-                            'forum_participation': int(student_row.get('forum_participation', 3)),
-                            'meeting_attendance': float(student_row.get('meeting_attendance', 75.0)),
-                            'study_group': int(student_row.get('study_group', 1)),
-                            'semester': int(student_row.get('semester', 4)),
-                            'prev_gpa': float(student_row.get('prev_gpa', 3.0)),
-                            'days_active': int(student_row.get('days_active', 5)),
-                            'clicks_per_week': int(student_row.get('clicks_per_week', 10)),
-                            'assessments_submitted': int(student_row.get('assessments_submitted', 5)),
-                            'previous_attempts': int(student_row.get('previous_attempts', 0)),
-                            'studied_credits': int(student_row.get('studied_credits', 20))
-                        }
-                        input_df = pd.DataFrame([input_data])
-                        dropout_prob = dropout_model.predict_proba(input_df)[0][1]
-                        student_row['risk_score'] = round(dropout_prob * 100, 1)
-                    except:
-                        student_row['risk_score'] = 50.0
-                else:
-                    student_row['risk_score'] = 50.0
+                score += 3
+            
+            # Attendance contribution (0-20 points)
+            attendance = float(student_row.get('attendance', 85.0))
+            if attendance < 60:
+                score += 20
+            elif attendance < 75:
+                score += 15
+            elif attendance < 85:
+                score += 8
+            else:
+                score += 2
+            
+            # Failed courses contribution (0-20 points)
+            failed = int(student_row.get('failed_courses', 0))
+            score += min(failed * 7, 20)
+            
+            # Late assignments contribution (0-15 points)
+            late = float(student_row.get('late_assignments', 0))
+            if late > 30:
+                score += 15
+            elif late > 15:
+                score += 10
+            elif late > 5:
+                score += 5
+            
+            # Engagement contribution (0-10 points)
+            engagement = float(student_row.get('feedback_engagement', 50.0))
+            if engagement < 30:
+                score += 10
+            elif engagement < 50:
+                score += 6
+            elif engagement < 70:
+                score += 3
+            
+            # Activity contribution (0-10 points)
+            days_active = int(student_row.get('days_active', 5))
+            if days_active < 3:
+                score += 10
+            elif days_active < 5:
+                score += 5
+            elif days_active < 6:
+                score += 2
+            
+            # If dropout column exists, boost score
+            if 'dropout' in student_row and student_row['dropout'] == 1:
+                score = max(score, 60)
+            
+            student_row['risk_score'] = min(score, 100)
         
         # Add risk category
         risk_score = student_row.get('risk_score', 50)
