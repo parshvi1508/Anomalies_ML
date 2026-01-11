@@ -42,6 +42,17 @@ const riskCategoryIcons = {
   'unknown': '⚪'
 };
 
+const riskCategoryBgColors = {
+  'extreme risk': 'bg-red-50 border-red-200',
+  'high risk': 'bg-orange-50 border-orange-200',
+  'moderate risk': 'bg-yellow-50 border-yellow-200',
+  'low risk': 'bg-green-50 border-green-200',
+  'high': 'bg-orange-50 border-orange-200',
+  'medium': 'bg-yellow-50 border-yellow-200',
+  'low': 'bg-green-50 border-green-200',
+  'unknown': 'bg-gray-50 border-gray-200'
+};
+
 // Function to normalize risk category names
 const normalizeRiskCategory = (category: string): string => {
   if (!category) return 'unknown';
@@ -186,29 +197,29 @@ export default function StudentListPage() {
   return (
     <div>
       <Navigation />
-    <div className="p-6 max-w-6xl mx-auto">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Student Dashboard</h1>
-        <p className="text-gray-600">Select a student to view their detailed information</p>
+    <div className="p-6 max-w-7xl mx-auto">
+      <div className="mb-8">
+        <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-3">Student Dashboard</h1>
+        <p className="text-gray-600 text-lg">Select a student to view their detailed information</p>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 overflow-x-auto">
-        <div className="bg-white rounded-lg shadow p-4 border">
-          <div className="text-2xl font-bold text-gray-900">{students.length}</div>
-          <div className="text-sm text-gray-500">Total Students</div>
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg shadow-md p-5 border-2 border-blue-200">
+          <div className="text-3xl font-bold text-blue-900 mb-1">{students.length}</div>
+          <div className="text-sm font-medium text-blue-700">Total Students</div>
         </div>
         {Object.entries(riskCategoryCounts)
           .filter(([category]) => category !== 'unknown')
           .map(([category, count]) => (
-          <div key={category} className="bg-white rounded-lg shadow p-4 border">
-            <div className="flex items-center gap-2">
-              <span className="text-lg">
+          <div key={category} className={`rounded-lg shadow-md p-5 border-2 ${riskCategoryBgColors[category as keyof typeof riskCategoryBgColors] || 'bg-gray-50 border-gray-200'}`}>
+            <div className="flex items-center gap-3">
+              <span className="text-2xl">
                 {riskCategoryIcons[category as keyof typeof riskCategoryIcons] || '⚪'}
               </span>
               <div>
-                <div className="text-2xl font-bold text-gray-900">{count}</div>
-                <div className="text-sm text-gray-500 capitalize">
+                <div className="text-3xl font-bold text-gray-900 mb-1">{count}</div>
+                <div className="text-sm font-semibold text-gray-700 capitalize">
                   {category}
                 </div>
               </div>
@@ -218,11 +229,11 @@ export default function StudentListPage() {
       </div>
 
       {/* Filters and Search */}
-      <div className="bg-white rounded-lg shadow p-4 mb-6 border">
+      <div className="bg-white rounded-lg shadow-md p-6 mb-6 border">
         <div className="flex flex-col md:flex-row gap-4">
           <div className="flex-1">
-            <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-1">
-              Search Students
+            <label htmlFor="search" className="block text-sm font-semibold text-gray-700 mb-2">
+              🔍 Search Students
             </label>
             <input
               id="search"
@@ -231,22 +242,22 @@ export default function StudentListPage() {
               aria-label="Search Students by Name or ID"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
             />
           </div>
 
           {/* Only show risk filter if we have risk categories */}
           {availableRiskCategories.length > 0 && (
-            <div>
-              <label htmlFor="riskFilter" className="block text-sm font-medium text-gray-700 mb-1">
-                Filter by Risk
+            <div className="md:w-56">
+              <label htmlFor="riskFilter" className="block text-sm font-semibold text-gray-700 mb-2">
+                🎯 Filter by Risk
               </label>
               <select
                 id="riskFilter"
                 aria-label="Filter by Risk Level"
                 value={selectedRiskCategory}
                 onChange={(e) => setSelectedRiskCategory(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-white"
               >
                 <option value="all">All Risk Levels</option>
                 {availableRiskCategories.map(category => (
@@ -258,16 +269,16 @@ export default function StudentListPage() {
             </div>
           )}
 
-          <div>
-            <label htmlFor="sort" className="block text-sm font-medium text-gray-700 mb-1">
-              Sort By
+          <div className="md:w-48">
+            <label htmlFor="sort" className="block text-sm font-semibold text-gray-700 mb-2">
+              📊 Sort By
             </label>
             <select
               id="sort"
               aria-label="Sort Students"
               value={sortBy}
               onChange={(e) => handleSortChange(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-white"
             >
               <option value="id">Student ID</option>
               <option value="riskCategory">Risk Category</option>
@@ -276,8 +287,7 @@ export default function StudentListPage() {
         </div>
 
         {(searchTerm || selectedRiskCategory !== 'all') && (
-          <div className="mt-3 text-sm text-gray-600">
-            Showing {filteredAndSortedStudents.length} of {students.length} students
+          <div className="mt-4 px-4 py-2 bg-blue-50 border border-blue-200 rounded-lg text-sm font-medium text-blue-700">\n            📋 Showing {filteredAndSortedStudents.length} of {students.length} students
           </div>
         )}
       </div>
@@ -294,27 +304,27 @@ export default function StudentListPage() {
           </p>
         </div>
       ) : (
-        <section aria-labelledby="studentList" className="bg-white rounded-lg shadow border">
-          <div className="grid grid-cols-1 divide-y divide-gray-200">
+        <section aria-labelledby="studentList" className="bg-white rounded-lg shadow-md border">
+          <div className="grid grid-cols-1 divide-y divide-gray-100">
             {filteredAndSortedStudents.map((student) => (
               <Link key={student.id} href={`/students/${student.id}`}>
-                <div className="p-4 hover:bg-gray-50 transition-colors cursor-pointer">
+                <div className="p-5 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition-all cursor-pointer group">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-4">
                       <div className="flex-shrink-0">
-                        <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                          <span className="text-blue-600 font-medium text-sm">
+                        <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-full flex items-center justify-center shadow-md group-hover:scale-110 transition-transform">
+                          <span className="text-white font-bold text-base">
                             {student.name ? student.name.charAt(0).toUpperCase() : student.id.charAt(0)}
                           </span>
                         </div>
                       </div>
                       <div>
-                        <div className="text-sm font-medium text-gray-900">
+                        <div className="text-base font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
                           {student.name || `Student ${student.id}`}
                         </div>
-                        <div className="text-sm text-gray-500">ID: {student.id}</div>
+                        <div className="text-sm text-gray-600">ID: {student.id}</div>
                         {student.lastActive && (
-                          <div className="text-xs text-gray-400">
+                          <div className="text-xs text-gray-500 mt-1">
                             Last active: {new Date(student.lastActive).toLocaleString()}
                           </div>
                         )}
@@ -322,18 +332,18 @@ export default function StudentListPage() {
                     </div>
                     <div className="flex items-center space-x-3">
                       <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border capitalize ${
+                        className={`inline-flex items-center px-3 py-1.5 rounded-full text-sm font-semibold border-2 capitalize shadow-sm ${
                           riskCategoryColors[student.riskCategory as keyof typeof riskCategoryColors] ||
                           riskCategoryColors.unknown
                         }`}
                       >
-                        <span className="mr-1">
+                        <span className="mr-1.5 text-base">
                           {riskCategoryIcons[student.riskCategory as keyof typeof riskCategoryIcons] || '⚪'}
                         </span>
                         {student.riskCategory}
                       </span>
                       <svg
-                        className="w-5 h-5 text-gray-400"
+                        className="w-5 h-5 text-gray-400 group-hover:text-blue-500 transition-colors"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
