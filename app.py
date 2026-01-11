@@ -252,38 +252,54 @@ async def get_students():
         if 'student_id' not in df.columns:
             df['student_id'] = [f"S{i:04d}" for i in range(len(df))]
         
-        # Calculate risk scores if not present
+        # Calculate risk scores if not present using the actual model
         if 'risk_score' not in df.columns and model_cache and model_cache.models:
+            logger.info("Calculating risk scores using ML model...")
             risk_scores = []
+            dropout_model = model_cache.models.get('dropout')  # Changed from 'dropout_model'
+            metadata = model_cache.models.get('metadata', {})
+            feature_names = metadata.get('feature_names', [])
+            
             for _, row in df.iterrows():
                 try:
-                    # Create prediction input
-                    input_data = {
-                        'gpa': float(row.get('gpa', 3.0)),
-                        'attendance': float(row.get('attendance', 85.0)),
-                        'failed_courses': int(row.get('failed_courses', 0)),
-                        'feedback_engagement': float(row.get('feedback_engagement', 50.0)),
-                        'late_assignments': int(row.get('late_assignments', 0)),
-                        'forum_participation': int(row.get('forum_participation', 3)),
-                        'meeting_attendance': float(row.get('meeting_attendance', 75.0)),
-                        'study_group': int(row.get('study_group', 1))
-                    }
+                    # Use actual features from the model
+                    if feature_names:
+                        input_data = {feat: float(row.get(feat, 0)) for feat in feature_names if feat in df.columns}
+                    else:
+                        # Fallback to known features
+                        input_data = {
+                            'gpa': float(row.get('gpa', 3.0)),
+                            'attendance': float(row.get('attendance', 85.0)),
+                            'failed_courses': int(row.get('failed_courses', 0)),
+                            'feedback_engagement': float(row.get('feedback_engagement', 50.0)),
+                            'late_assignments': int(row.get('late_assignments', 0)),
+                            'forum_participation': int(row.get('forum_participation', 3)),
+                            'meeting_attendance': float(row.get('meeting_attendance', 75.0)),
+                            'study_group': int(row.get('study_group', 1)),
+                            'semester': int(row.get('semester', 4)),
+                            'prev_gpa': float(row.get('prev_gpa', 3.0)),
+                            'days_active': int(row.get('days_active', 5)),
+                            'clicks_per_week': int(row.get('clicks_per_week', 10)),
+                            'assessments_submitted': int(row.get('assessments_submitted', 5)),
+                            'previous_attempts': int(row.get('previous_attempts', 0)),
+                            'studied_credits': int(row.get('studied_credits', 20))
+                        }
                     
                     input_df = pd.DataFrame([input_data])
-                    dropout_model = model_cache.models.get('dropout_model')
                     if dropout_model:
                         dropout_prob = dropout_model.predict_proba(input_df)[0][1]
                         risk_scores.append(round(dropout_prob * 100, 1))
                     else:
                         risk_scores.append(50.0)
-                except:
+                except Exception as e:
+                    logger.warning(f"Error calculating risk for student: {e}")
                     risk_scores.append(50.0)
             
             df['risk_score'] = risk_scores
         
-        # Add risk categories
+        # Add risk categories based on actual scores
         if 'risk_category' not in df.columns:
-            df['risk_category'] = df.get('risk_score', 50).apply(
+            df['risk_category'] = df['risk_score'].apply(
                 lambda x: 'Extreme Risk' if x >= 75 else 
                          'High Risk' if x >= 50 else 
                          'Moderate Risk' if x >= 25 else 
@@ -312,6 +328,102 @@ async def get_students():
         
     except Exception as e:
         logger.error(f"Error fetching students: {str(e)}")
+        return JSONResponse(
+            content={"error": f"Failed to load student data: {str(e)}"},
+            status_code=500
+        )
+
+@app.get("/api/students/{student_id}")
+async def get_student_by_id(student_id: str):
+    """Get individual student data with full details"""
+    try:
+        # Try to load the most recent uploaded file
+        upload_paths = [
+            Path("./uploads/student_data_with_risk.csv"),
+            Path("./uploads/student_data.csv"),
+            Path("/tmp/uploads/student_data_with_risk.csv"),
+            Path("/tmp/uploads/student_data.csv")
+        ]
+        
+        df = None
+        for path in upload_paths:
+            if path.exists():
+                df = pd.read_csv(path)
+                break
+        
+        if df is None:
+            return JSONResponse(
+                content={"error": "No student data available"},
+                status_code=404
+            )
+        
+        # Ensure student_id column exists
+        if 'student_id' not in df.columns:
+            df['student_id'] = [f"S{i:04d}" for i in range(len(df))]
+        
+        # Find the specific student
+        student_data = df[df['student_id'] == student_id]
+        
+        if student_data.empty:
+            return JSONResponse(
+                content={"error": f"Student {student_id} not found"},
+                status_code=404
+            )
+        
+        # Get the student row
+        student_row = student_data.iloc[0].to_dict()
+        
+        # Calculate risk score if not present
+        if 'risk_score' not in student_row or pd.isna(student_row['risk_score']):
+            dropout_model = model_cache.models.get('dropout') if model_cache else None  # Changed from 'dropout_model'
+            if dropout_model:
+                try:
+                    input_data = {
+                        'gpa': float(student_row.get('gpa', 3.0)),
+                        'attendance': float(student_row.get('attendance', 85.0)),
+                        'failed_courses': int(student_row.get('failed_courses', 0)),
+                        'feedback_engagement': float(student_row.get('feedback_engagement', 50.0)),
+                        'late_assignments': int(student_row.get('late_assignments', 0)),
+                        'forum_participation': int(student_row.get('forum_participation', 3)),
+                        'meeting_attendance': float(student_row.get('meeting_attendance', 75.0)),
+                        'study_group': int(student_row.get('study_group', 1)),
+                        'semester': int(student_row.get('semester', 4)),
+                        'prev_gpa': float(student_row.get('prev_gpa', 3.0)),
+                        'days_active': int(student_row.get('days_active', 5)),
+                        'clicks_per_week': int(student_row.get('clicks_per_week', 10)),
+                        'assessments_submitted': int(student_row.get('assessments_submitted', 5)),
+                        'previous_attempts': int(student_row.get('previous_attempts', 0)),
+                        'studied_credits': int(student_row.get('studied_credits', 20))
+                    }
+                    input_df = pd.DataFrame([input_data])
+                    dropout_prob = dropout_model.predict_proba(input_df)[0][1]
+                    student_row['risk_score'] = round(dropout_prob * 100, 1)
+                except:
+                    student_row['risk_score'] = 50.0
+            else:
+                student_row['risk_score'] = 50.0
+        
+        # Add risk category
+        risk_score = student_row.get('risk_score', 50)
+        student_row['risk_category'] = (
+            'Extreme Risk' if risk_score >= 75 else 
+            'High Risk' if risk_score >= 50 else 
+            'Moderate Risk' if risk_score >= 25 else 
+            'Low Risk'
+        )
+        
+        # Clean NaN values
+        for key, value in student_row.items():
+            if pd.isna(value):
+                student_row[key] = None
+        
+        return JSONResponse(content={
+            "success": True,
+            "student": student_row
+        })
+        
+    except Exception as e:
+        logger.error(f"Error fetching student {student_id}: {str(e)}")
         return JSONResponse(
             content={"error": f"Failed to load student data: {str(e)}"},
             status_code=500
