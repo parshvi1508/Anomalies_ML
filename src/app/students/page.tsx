@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
+import Navigation from '@/components/Navigation';
 
 interface Student {
   id: string;
@@ -99,7 +100,9 @@ export default function StudentListPage() {
           lastActive: s.last_active || s.lastActive
         }));
 
-        console.log('Formatted students:', formatted); // Debug log
+        console.log('API Response:', data);
+        console.log('Formatted students:', formatted);
+        console.log('Risk categories found:', [...new Set(formatted.map(s => s.riskCategory))]);
         setStudents(formatted);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred while fetching students');
@@ -144,13 +147,16 @@ export default function StudentListPage() {
 
   if (loading) {
     return (
-      <div className="p-6">
-        <div className="animate-pulse">
-          <div className="h-8 bg-gray-200 rounded mb-4 w-48"></div>
-          <div className="space-y-3">
-            {[...Array(5)].map((_, i) => (
-              <div key={i} className="h-16 bg-gray-100 rounded"></div>
-            ))}
+      <div>
+        <Navigation />
+        <div className="p-6">
+          <div className="animate-pulse">
+            <div className="h-8 bg-gray-200 rounded mb-4 w-48"></div>
+            <div className="space-y-3">
+              {[...Array(5)].map((_, i) => (
+                <div key={i} className="h-16 bg-gray-100 rounded"></div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -159,22 +165,27 @@ export default function StudentListPage() {
 
   if (error) {
     return (
-      <div className="p-6">
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-          <h2 className="text-lg font-semibold text-red-800 mb-2">Error Loading Students</h2>
-          <p className="text-red-600">{error}</p>
-          <button
-            onClick={() => window.location.reload()}
-            className="mt-3 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
-          >
-            Retry
-          </button>
+      <div>
+        <Navigation />
+        <div className="p-6">
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+            <h2 className="text-lg font-semibold text-red-800 mb-2">Error Loading Students</h2>
+            <p className="text-red-600">{error}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="mt-3 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
+            >
+              Retry
+            </button>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
+    <div>
+      <Navigation />
     <div className="p-6 max-w-6xl mx-auto">
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Student Dashboard</h1>
@@ -337,6 +348,7 @@ export default function StudentListPage() {
           </div>
         </section>
       )}
+    </div>
     </div>
   );
 }
