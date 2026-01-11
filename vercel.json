@@ -8,14 +8,6 @@
   "outputDirectory": ".next",
   "cleanUrls": true,
   "trailingSlash": false,
-  "env": {
-    "NEXT_PUBLIC_API_URL": "@api_url"
-  },
-  "build": {
-    "env": {
-      "NEXT_PUBLIC_API_URL": "@api_url"
-    }
-  },
   "regions": ["iad1"],
   "functions": {
     "src/app/api/**/*.ts": {
