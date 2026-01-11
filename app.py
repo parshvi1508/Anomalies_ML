@@ -11,8 +11,13 @@ import json
 import pickle
 import os
 import sys
+import logging
 from functools import lru_cache
 from scripts.explore_student_data import explore_student_data
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Add paths for imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'recommender'))
