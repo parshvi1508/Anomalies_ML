@@ -19,21 +19,17 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'utils'))
 
 # Import DS combiner class BEFORE loading pickled models
 from ds_combiner import DempsterShaferCombination, DempsterShaferCombinationDynamic
-from model_loader import load_all_models
 
 app = FastAPI(title="Student Analytics API", version="2.0.0")
 
-# CORS Configuration - Allow Vercel frontend + Render backend
-# Note: Vercel wildcard patterns don't work in allow_origins, use allow_origin_regex instead
+# CORS Configuration - Allow Vercel frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origin_regex=r"https://.*\.vercel\.app",  # All Vercel domains
     allow_origins=[
+        "https://*.vercel.app",  # All Vercel preview deployments
         "http://localhost:3000",  # Local development
         "http://localhost:3001",
         "https://localhost:3000",
-        # Add your specific Vercel domain
-        "https://dropout-dashboard.vercel.app",
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -127,10 +123,22 @@ class ModelCache:
         """Load all trained models at startup"""
         try:
             models_dir = os.path.join(os.path.dirname(__file__), 'public', 'models')
-            from pathlib import Path
             
-            # Use model_loader to handle unpickling correctly
-            self._models = load_all_models(Path(models_dir))
+            # Load Isolation Forest (Anomaly Detection)
+            with open(os.path.join(models_dir, 'anomaly_model.pkl'), 'rb') as f:
+                self._models['anomaly'] = pickle.load(f)
+            
+            # Load Random Forest (Dropout Classification)
+            with open(os.path.join(models_dir, 'dropout_model.pkl'), 'rb') as f:
+                self._models['dropout'] = pickle.load(f)
+            
+            # Load Dempster-Shafer Combiner
+            with open(os.path.join(models_dir, 'ds_combiner.pkl'), 'rb') as f:
+                self._models['ds_combiner'] = pickle.load(f)
+            
+            # Load Model Metadata
+            with open(os.path.join(models_dir, 'model_info.pkl'), 'rb') as f:
+                self._models['metadata'] = pickle.load(f)
             
             print("✅ Models loaded successfully!")
             print(f"   - Anomaly Model: {type(self._models['anomaly']).__name__}")

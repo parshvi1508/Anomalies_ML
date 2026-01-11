@@ -11,14 +11,39 @@
 !.yarn/versions
 
 # Python virtual environment
-venv
-# Python virtual environment
-venv
-venv/.lock
-venv\Lib
+venv/
+venv\
+env/
+ENV/
+.venv
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Python specific
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
 
 # testing
 /coverage
+.pytest_cache/
+.coverage
+htmlcov/
 
 # next.js
 /.next/
@@ -30,6 +55,7 @@ venv\Lib
 # misc
 .DS_Store
 *.pem
+Thumbs.db
 
 # debug
 npm-debug.log*
@@ -38,7 +64,11 @@ yarn-error.log*
 .pnpm-debug.log*
 
 # env files (can opt-in for committing if needed)
-.env*
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 
 # vercel
 .vercel
@@ -46,3 +76,34 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Uploaded files and temp directories
+uploads/*.csv
+temp/*.csv
+logs/*.log
+*.tmp
+
+# Jupyter notebooks checkpoints
+.ipynb_checkpoints/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Backup files
+*_backup.py
+*_old.py
+*.bak
+
+# Word temp files
+~*.tmp
+~*.docx
+
+# PNG images in root (keep only in proper directories)
+/*.png
