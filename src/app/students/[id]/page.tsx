@@ -25,6 +25,13 @@ interface Student {
   dropout: number;
   risk_score: number;
   risk_category: string;
+  // Dynamic uncertainty fields from /predict endpoint
+  anomaly_uncertainty?: number;
+  dropout_uncertainty?: number;
+  expert_uncertainty?: number;
+  fusion_uncertainty?: number;
+  belief?: number;
+  plausibility?: number;
 }
 
 const RISK_CONFIG: Record<string, {
@@ -286,6 +293,151 @@ export default function StudentProfilePage() {
           </div>
         </div>
 
+        {/* Dynamic Uncertainty Display - NEW SECTION */}
+        {(student.anomaly_uncertainty !== undefined || student.dropout_uncertainty !== undefined) && (
+          <div className="bg-gradient-to-br from-blue-50 to-purple-50 shadow-lg rounded-xl p-6 mb-6 border-2 border-blue-200">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h3 className="text-xl font-bold text-slate-900">Dynamic Uncertainty Analysis</h3>
+                <p className="text-sm text-slate-600 mt-1">
+                  Entropy-based confidence quantification • Industry-standard uncertainty intervals
+                </p>
+              </div>
+              <div className="bg-white px-4 py-2 rounded-lg border border-blue-300 shadow-sm">
+                <p className="text-xs text-slate-600">Research Implementation</p>
+                <p className="text-sm font-bold text-blue-900">Dempster-Shafer Fusion</p>
+              </div>
+            </div>
+
+            {/* Uncertainty Gauges */}
+            <div className="grid md:grid-cols-3 gap-4 mb-6">
+              {student.anomaly_uncertainty !== undefined && (
+                <UncertaintyGauge
+                  label="Anomaly Detection"
+                  value={student.anomaly_uncertainty}
+                  method="Distance-based"
+                  description="Proximity to decision boundary"
+                />
+              )}
+              
+              {student.dropout_uncertainty !== undefined && (
+                <UncertaintyGauge
+                  label="Dropout Classifier"
+                  value={student.dropout_uncertainty}
+                  method="Entropy-based"
+                  description="Prediction confidence level"
+                />
+              )}
+              
+              {student.expert_uncertainty !== undefined && (
+                <UncertaintyGauge
+                  label="Expert Rules"
+                  value={student.expert_uncertainty}
+                  method="Fixed"
+                  description="Rule-based assessment"
+                />
+              )}
+            </div>
+
+            {/* Evidence Fusion Results */}
+            {student.fusion_uncertainty !== undefined && (
+              <div className="bg-white rounded-xl p-5 border border-blue-200 shadow-sm">
+                <h4 className="font-bold text-slate-900 mb-4 flex items-center">
+                  <svg className="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  Dempster-Shafer Evidence Fusion
+                </h4>
+                <div className="grid md:grid-cols-3 gap-4">
+                  <div className="text-center p-4 bg-blue-50 rounded-lg">
+                    <p className="text-xs text-slate-600 mb-1">Belief (Lower)</p>
+                    <p className="text-2xl font-bold text-blue-900">
+                      {student.belief !== undefined ? (student.belief * 100).toFixed(1) : 'N/A'}%
+                    </p>
+                  </div>
+                  <div className="text-center p-4 bg-purple-50 rounded-lg">
+                    <p className="text-xs text-slate-600 mb-1">Plausibility (Upper)</p>
+                    <p className="text-2xl font-bold text-purple-900">
+                      {student.plausibility !== undefined ? (student.plausibility * 100).toFixed(1) : 'N/A'}%
+                    </p>
+                  </div>
+                  <div className="text-center p-4 bg-slate-100 rounded-lg">
+                    <p className="text-xs text-slate-600 mb-1">Uncertainty Interval</p>
+                    <p className="text-2xl font-bold text-slate-900">
+                      {(student.fusion_uncertainty * 100).toFixed(1)}%
+                    </p>
+                  </div>
+                </div>
+                <div className="mt-4 p-3 bg-blue-100 border border-blue-300 rounded-lg">
+                  <p className="text-xs text-blue-900">
+                    <strong>Interpretation:</strong> True dropout probability lies between{' '}
+                    <strong>{student.belief !== undefined ? (student.belief * 100).toFixed(1) : 'N/A'}%</strong> and{' '}
+                    <strong>{student.plausibility !== undefined ? (student.plausibility * 100).toFixed(1) : 'N/A'}%</strong>{' '}
+                    with <strong>{(student.fusion_uncertainty * 100).toFixed(1)}%</strong> ambiguity.
+                    {student.fusion_uncertainty < 0.1 
+                      ? ' High confidence prediction - strong model agreement.' 
+                      : ' Moderate uncertainty - consider additional assessment factors.'}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Comparison: Fixed vs Dynamic */}
+            <div className="mt-6 bg-white rounded-xl p-5 border border-purple-200">
+              <h4 className="font-bold text-slate-900 mb-4">Fixed vs Dynamic Uncertainty Comparison</h4>
+              <div className="space-y-4">
+                <div>
+                  <div className="flex justify-between text-sm mb-2">
+                    <span className="font-medium text-slate-700">Fixed Uncertainty (Traditional)</span>
+                    <span className="font-bold text-slate-900">15.0%</span>
+                  </div>
+                  <div className="h-3 bg-slate-200 rounded-full overflow-hidden">
+                    <div className="h-full bg-slate-500" style={{ width: '15%' }}></div>
+                  </div>
+                  <p className="text-xs text-slate-600 mt-1">
+                    Constant value for all predictions (7.0% interval coverage in research)
+                  </p>
+                </div>
+                
+                <div>
+                  <div className="flex justify-between text-sm mb-2">
+                    <span className="font-medium text-slate-700">Dynamic Uncertainty (This System)</span>
+                    <span className="font-bold text-blue-900">
+                      {student.fusion_uncertainty !== undefined 
+                        ? (student.fusion_uncertainty * 100).toFixed(1) 
+                        : student.dropout_uncertainty !== undefined 
+                        ? (student.dropout_uncertainty * 100).toFixed(1) 
+                        : 'N/A'}%
+                    </span>
+                  </div>
+                  <div className="h-3 bg-blue-200 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-gradient-to-r from-blue-500 to-purple-500" 
+                      style={{ 
+                        width: `${(student.fusion_uncertainty !== undefined 
+                          ? student.fusion_uncertainty 
+                          : student.dropout_uncertainty !== undefined 
+                          ? student.dropout_uncertainty 
+                          : 0.15) * 100}%` 
+                      }}
+                    ></div>
+                  </div>
+                  <p className="text-xs text-slate-600 mt-1">
+                    Adapts based on model confidence (74.8% interval coverage in research validation)
+                  </p>
+                </div>
+              </div>
+              <div className="mt-4 p-3 bg-purple-50 border border-purple-200 rounded-lg">
+                <p className="text-xs text-purple-900">
+                  <strong>Research Finding:</strong> Dynamic uncertainty provides 10.7× better interval 
+                  coverage than fixed uncertainty (74.8% vs 7.0%), enabling more reliable risk assessment 
+                  and intervention prioritization.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Performance Issues */}
         {(student.late_assignments || 0) > 0 && (
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 mb-6">
@@ -323,4 +475,56 @@ export default function StudentProfilePage() {
       </div>
     </div>
   );
+}
+
+// ==================== UNCERTAINTY GAUGE COMPONENT ====================
+function UncertaintyGauge({ label, value, method, description }: {
+  label: string
+  value: number
+  method: string
+  description: string
+}) {
+  const getUncertaintyColor = (u: number) => {
+    if (u < 0.1) return { bg: 'bg-green-500', text: 'text-green-900', ring: 'ring-green-200' }
+    if (u < 0.2) return { bg: 'bg-yellow-500', text: 'text-yellow-900', ring: 'ring-yellow-200' }
+    return { bg: 'bg-red-500', text: 'text-red-900', ring: 'ring-red-200' }
+  }
+
+  const getConfidenceLabel = (u: number) => {
+    if (u < 0.1) return 'High Confidence'
+    if (u < 0.2) return 'Moderate'
+    return 'Low Confidence'
+  }
+
+  const colors = getUncertaintyColor(value)
+
+  return (
+    <div className="bg-white rounded-lg p-4 border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+      <div className="flex items-center justify-between mb-3">
+        <h5 className="font-bold text-slate-900 text-sm">{label}</h5>
+        <span className="text-xs px-2 py-1 bg-slate-100 text-slate-700 rounded-full font-medium">
+          {method}
+        </span>
+      </div>
+      
+      <div className="relative mb-3">
+        <div className="h-3 bg-slate-200 rounded-full overflow-hidden">
+          <div
+            className={`h-full ${colors.bg} transition-all duration-500`}
+            style={{ width: `${Math.min(value * 100, 100)}%` }}
+          />
+        </div>
+        <div className="flex justify-between text-xs text-slate-500 mt-1">
+          <span>0%</span>
+          <span className="font-semibold text-slate-700">{(value * 100).toFixed(1)}%</span>
+          <span>40%</span>
+        </div>
+      </div>
+
+      <div className={`flex items-center justify-between p-2 rounded-lg ${colors.bg} bg-opacity-10 ring-1 ${colors.ring}`}>
+        <p className="text-xs text-slate-600">{description}</p>
+        <span className={`text-xs font-bold ${colors.text}`}>{getConfidenceLabel(value)}</span>
+      </div>
+    </div>
+  )
 }

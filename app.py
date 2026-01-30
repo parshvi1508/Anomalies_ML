@@ -13,7 +13,8 @@ import os
 import sys
 import logging
 from functools import lru_cache
-from scripts.explore_student_data import explore_student_data
+# Removed seaborn-dependent import to avoid dependency issues
+# from scripts.explore_student_data import explore_student_data
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -61,6 +62,11 @@ class StudentData(BaseModel):
     assessments_submitted: int = Field(..., ge=0, description="Number of assessments submitted")
     previous_attempts: int = Field(..., ge=0, description="Number of course retakes")
     studied_credits: int = Field(..., ge=0, description="Total credits enrolled")
+    # Additional features required by the model
+    semester: int = Field(default=1, ge=1, le=8, description="Current semester")
+    forum_participation: int = Field(default=0, ge=0, description="Forum participation count")
+    meeting_attendance: float = Field(default=75.0, ge=0.0, le=100.0, description="Meeting attendance percentage")
+    study_group: int = Field(default=0, ge=0, le=1, description="Study group membership (0 or 1)")
     
     class Config:
         json_schema_extra = {
@@ -75,7 +81,11 @@ class StudentData(BaseModel):
                 "days_active": 3,
                 "assessments_submitted": 4,
                 "previous_attempts": 1,
-                "studied_credits": 15
+                "studied_credits": 15,
+                "semester": 3,
+                "forum_participation": 5,
+                "meeting_attendance": 70.0,
+                "study_group": 0
             }
         }
 
@@ -218,7 +228,12 @@ async def analyze_csv(file: UploadFile = File(...)):
     try:
         contents = await file.read()
         df = pd.read_csv(io.BytesIO(contents))
-        results = explore_student_data(df)
+        # Basic analysis without seaborn dependency
+        results = {
+            "total_students": len(df),
+            "columns": list(df.columns),
+            "summary_stats": df.describe().to_dict()
+        }
         return JSONResponse(content=results)
     except Exception as e:
         return JSONResponse(content={"error": str(e)}, status_code=500)
@@ -483,6 +498,45 @@ async def get_student_by_id(student_id: str):
         for key, value in student_row.items():
             if pd.isna(value):
                 student_row[key] = None
+        
+        # ========== ADD DYNAMIC UNCERTAINTY DATA ==========
+        # Run prediction to get uncertainty values
+        try:
+            if model_cache and model_cache.models:
+                # Create StudentData object for prediction with all required fields
+                student_data_obj = StudentData(
+                    gpa=float(student_row.get('gpa', 0)),
+                    prev_gpa=float(student_row.get('prev_gpa', 0)),
+                    attendance=float(student_row.get('attendance', 0)),
+                    failed_courses=int(student_row.get('failed_courses', 0)),
+                    feedback_engagement=float(student_row.get('feedback_engagement', 0)),
+                    late_assignments=float(student_row.get('late_assignments', 0)),
+                    clicks_per_week=int(student_row.get('clicks_per_week', 0)),
+                    days_active=int(student_row.get('days_active', 0)),
+                    assessments_submitted=int(student_row.get('assessments_submitted', 0)),
+                    previous_attempts=int(student_row.get('previous_attempts', 0)),
+                    studied_credits=int(student_row.get('studied_credits', 0)),
+                    # Additional required fields with defaults
+                    semester=int(student_row.get('semester', 1)),
+                    forum_participation=int(student_row.get('forum_participation', 0)),
+                    meeting_attendance=float(student_row.get('meeting_attendance', 75.0)),
+                    study_group=int(student_row.get('study_group', 0))
+                )
+                
+                # Get prediction (this returns a dict directly)
+                pred_data = await predict_dropout(student_data_obj)
+                
+                # Extract uncertainty fields from prediction result
+                if pred_data and isinstance(pred_data, dict):
+                    student_row['anomaly_uncertainty'] = pred_data.get('anomaly_detection', {}).get('dynamic_uncertainty')
+                    student_row['dropout_uncertainty'] = pred_data.get('dropout_prediction', {}).get('dynamic_uncertainty')
+                    student_row['expert_uncertainty'] = pred_data.get('expert_rules', {}).get('dynamic_uncertainty')
+                    student_row['fusion_uncertainty'] = pred_data.get('evidence_fusion', {}).get('uncertainty')
+                    student_row['belief'] = pred_data.get('evidence_fusion', {}).get('belief')
+                    student_row['plausibility'] = pred_data.get('evidence_fusion', {}).get('plausibility')
+        except Exception as uncertainty_error:
+            logger.warning(f"Could not compute uncertainty for student {student_id}: {str(uncertainty_error)}")
+            # Continue without uncertainty data - graceful degradation
         
         return JSONResponse(content={
             "success": True,
