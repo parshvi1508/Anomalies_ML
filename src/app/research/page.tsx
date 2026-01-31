@@ -443,9 +443,57 @@ function ComparisonSection() {
         <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-3 sm:mb-4">
           Comprehensive Research Analysis & Comparison (2024-2025)
         </h2>
-        <p className="text-base sm:text-lg text-slate-600">
+        <p className="text-base sm:text-lg text-slate-600 mb-4">
           Detailed benchmarking against <strong>16 cutting-edge publications</strong> from top-tier venues including IEEE, ACM, ICLR, NeurIPS, WWW, and leading journals
         </p>
+        
+        {/* Quick Stats */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-6">
+          <div className="bg-gradient-to-br from-blue-50 to-blue-100 border-2 border-blue-300 rounded-lg p-3 sm:p-4 text-center">
+            <div className="text-2xl sm:text-3xl font-bold text-blue-700">17</div>
+            <div className="text-xs sm:text-sm text-blue-600 font-medium">Total Systems</div>
+          </div>
+          <div className="bg-gradient-to-br from-purple-50 to-purple-100 border-2 border-purple-300 rounded-lg p-3 sm:p-4 text-center">
+            <div className="text-2xl sm:text-3xl font-bold text-purple-700">16</div>
+            <div className="text-xs sm:text-sm text-purple-600 font-medium">Competitor Papers</div>
+          </div>
+          <div className="bg-gradient-to-br from-green-50 to-green-100 border-2 border-green-300 rounded-lg p-3 sm:p-4 text-center">
+            <div className="text-2xl sm:text-3xl font-bold text-green-700">3</div>
+            <div className="text-xs sm:text-sm text-green-600 font-medium">Comparison Tables</div>
+          </div>
+          <div className="bg-gradient-to-br from-orange-50 to-orange-100 border-2 border-orange-300 rounded-lg p-3 sm:p-4 text-center">
+            <div className="text-2xl sm:text-3xl font-bold text-orange-700">2024-25</div>
+            <div className="text-xs sm:text-sm text-orange-600 font-medium">Latest Research</div>
+          </div>
+        </div>
+
+        {/* Table Navigation */}
+        <div className="bg-slate-100 border-2 border-slate-300 rounded-xl p-4">
+          <h4 className="font-bold text-slate-900 mb-3 text-sm sm:text-base">📊 Comparison Tables Overview:</h4>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div className="bg-white p-3 rounded-lg border border-slate-200 hover:shadow-md transition-shadow">
+              <div className="flex items-center space-x-2 mb-2">
+                <span className="bg-blue-600 text-white px-2 py-1 rounded text-xs font-bold">TABLE 1</span>
+                <span className="text-xs font-semibold text-slate-700">Performance Metrics</span>
+              </div>
+              <p className="text-xs text-slate-600">Accuracy, Precision, Recall, F1-Score, Uncertainty, Anomaly Detection</p>
+            </div>
+            <div className="bg-white p-3 rounded-lg border border-slate-200 hover:shadow-md transition-shadow">
+              <div className="flex items-center space-x-2 mb-2">
+                <span className="bg-purple-600 text-white px-2 py-1 rounded text-xs font-bold">TABLE 2</span>
+                <span className="text-xs font-semibold text-slate-700">Methodology & Tech Specs</span>
+              </div>
+              <p className="text-xs text-slate-600">Algorithm, Temporal Type, Features, Training Size, Explainability</p>
+            </div>
+            <div className="bg-white p-3 rounded-lg border border-slate-200 hover:shadow-md transition-shadow">
+              <div className="flex items-center space-x-2 mb-2">
+                <span className="bg-orange-600 text-white px-2 py-1 rounded text-xs font-bold">TABLE 3</span>
+                <span className="text-xs font-semibold text-slate-700">Capabilities Matrix</span>
+              </div>
+              <p className="text-xs text-slate-600">10 key capabilities compared feature-by-feature</p>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Performance Comparison Table */}
@@ -687,7 +735,56 @@ function ComparisonSection() {
 
       {/* Latest Research Comparison Cards */}
       <div className="space-y-4">
-        <h3 className="text-lg sm:text-xl font-bold text-slate-900 mb-3">Where We Excel vs 16 Recent Publications (2024-2025)</h3>
+        <h3 className="text-lg sm:text-xl font-bold text-slate-900 mb-3 flex items-center space-x-2">
+          <span className="bg-gradient-to-r from-indigo-600 to-blue-600 text-white px-3 py-1 rounded-lg text-sm">ALL PAPERS</span>
+          <span>Complete Research Papers Summary (16 Studies)</span>
+        </h3>
+        
+        {/* Research Papers Summary Table */}
+        <div className="overflow-x-auto border-2 border-indigo-300 rounded-xl shadow-lg mb-6">
+          <table className="w-full min-w-[1000px]">
+            <thead className="bg-gradient-to-r from-indigo-800 to-blue-700 text-white">
+              <tr>
+                <th className="px-3 sm:px-4 py-3 text-left text-xs font-bold uppercase">#</th>
+                <th className="px-3 sm:px-4 py-3 text-left text-xs font-bold uppercase">Study (Year)</th>
+                <th className="px-3 sm:px-4 py-3 text-left text-xs font-bold uppercase">Title</th>
+                <th className="px-3 sm:px-4 py-3 text-left text-xs font-bold uppercase">Venue/Journal</th>
+                <th className="px-3 sm:px-4 py-3 text-left text-xs font-bold uppercase">Primary Approach</th>
+                <th className="px-3 sm:px-4 py-3 text-left text-xs font-bold uppercase">Our Key Advantage</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-200">
+              {latestResearch.map((study, idx) => (
+                <tr key={idx} className={idx % 2 === 0 ? 'bg-white hover:bg-indigo-50' : 'bg-slate-50 hover:bg-indigo-50'}>
+                  <td className="px-3 sm:px-4 py-3 text-xs sm:text-sm font-bold text-indigo-600">
+                    {idx + 1}
+                  </td>
+                  <td className="px-3 sm:px-4 py-3 text-xs sm:text-sm font-semibold text-slate-900 whitespace-nowrap">
+                    <span className="inline-block bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-bold mr-1">
+                      {study.year}
+                    </span>
+                    {study.study}
+                  </td>
+                  <td className="px-3 sm:px-4 py-3 text-xs text-slate-700">
+                    {study.title}
+                  </td>
+                  <td className="px-3 sm:px-4 py-3 text-xs text-slate-600 italic">
+                    {study.journal}
+                  </td>
+                  <td className="px-3 sm:px-4 py-3 text-xs text-slate-700">
+                    <code className="bg-slate-100 px-2 py-1 rounded text-xs">{study.approach}</code>
+                  </td>
+                  <td className="px-3 sm:px-4 py-3 text-xs text-green-700 font-medium">
+                    {study.ourAdvantage}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Detailed Cards */}
+        <h4 className="text-base sm:text-lg font-bold text-slate-900 mb-3 mt-6">📄 Detailed Paper-by-Paper Analysis</h4>
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
           {latestResearch.map((study, idx) => (
             <div
@@ -724,6 +821,67 @@ function ComparisonSection() {
               </div>
             </div>
           ))}
+        </div>
+
+        {/* Venue & Methodology Distribution */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-6">
+          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-300 rounded-xl p-4">
+            <h4 className="font-bold text-slate-900 mb-3 text-sm sm:text-base flex items-center">
+              <span className="bg-blue-600 text-white px-2 py-1 rounded mr-2 text-xs">VENUES</span>
+              Publication Venues Distribution
+            </h4>
+            <div className="space-y-2 text-xs sm:text-sm">
+              <div className="flex justify-between items-center p-2 bg-white rounded">
+                <span className="text-slate-700">IEEE (TLT, Access, Education)</span>
+                <span className="font-bold text-blue-700">3 papers</span>
+              </div>
+              <div className="flex justify-between items-center p-2 bg-white rounded">
+                <span className="text-slate-700">Top Conferences (ICLR, NeurIPS, WWW)</span>
+                <span className="font-bold text-purple-700">4 papers</span>
+              </div>
+              <div className="flex justify-between items-center p-2 bg-white rounded">
+                <span className="text-slate-700">ACM (KDD, LAK)</span>
+                <span className="font-bold text-orange-700">2 papers</span>
+              </div>
+              <div className="flex justify-between items-center p-2 bg-white rounded">
+                <span className="text-slate-700">Education Venues (EDM, AIED)</span>
+                <span className="font-bold text-green-700">2 papers</span>
+              </div>
+              <div className="flex justify-between items-center p-2 bg-white rounded">
+                <span className="text-slate-700">Leading Journals</span>
+                <span className="font-bold text-red-700">5 papers</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-gradient-to-br from-purple-50 to-pink-50 border-2 border-purple-300 rounded-xl p-4">
+            <h4 className="font-bold text-slate-900 mb-3 text-sm sm:text-base flex items-center">
+              <span className="bg-purple-600 text-white px-2 py-1 rounded mr-2 text-xs">METHODS</span>
+              Methodology Categories
+            </h4>
+            <div className="space-y-2 text-xs sm:text-sm">
+              <div className="flex justify-between items-center p-2 bg-white rounded">
+                <span className="text-slate-700">Deep Learning (NN, LSTM, Transformer)</span>
+                <span className="font-bold text-purple-700">5 papers</span>
+              </div>
+              <div className="flex justify-between items-center p-2 bg-white rounded">
+                <span className="text-slate-700">Graph-based (GCN, GNN, KG)</span>
+                <span className="font-bold text-blue-700">3 papers</span>
+              </div>
+              <div className="flex justify-between items-center p-2 bg-white rounded">
+                <span className="text-slate-700">Advanced ML (Meta, Transfer, Contrastive)</span>
+                <span className="font-bold text-green-700">3 papers</span>
+              </div>
+              <div className="flex justify-between items-center p-2 bg-white rounded">
+                <span className="text-slate-700">Ensemble & Traditional ML</span>
+                <span className="font-bold text-orange-700">2 papers</span>
+              </div>
+              <div className="flex justify-between items-center p-2 bg-white rounded">
+                <span className="text-slate-700">Specialized (RL, Causal, AutoML)</span>
+                <span className="font-bold text-red-700">3 papers</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
