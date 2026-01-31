@@ -417,7 +417,7 @@ function ComparisonSection() {
     { study: 'Silva & Costa (2025)', algorithm: 'Causal Forest', temporal: 'Cross-sectional', features: 33, anomalyDetection: '✗', uncertaintyMethod: 'Treatment effect CI', explainability: 'High (causal)', trainingSize: '40K' },
     { study: 'Müller & Schmidt (2024)', algorithm: 'Multimodal Fusion', temporal: 'Multi-source', features: 67, anomalyDetection: '✗', uncertaintyMethod: 'None', explainability: 'Low', trainingSize: '55K' },
     { study: 'Park & Kim (2024)', algorithm: 'MAML', temporal: 'Meta-learning', features: 28, anomalyDetection: '✗', uncertaintyMethod: 'None', explainability: 'Low', trainingSize: '5K per task' },
-    { study: 'Garcia & Lopez (2025)', algorithm: 'Contrastive + Probe', temporal: 'Self-supervised', features: 128 (embed), anomalyDetection: '✗', uncertaintyMethod: 'None', explainability: 'Very Low', trainingSize: '70K' },
+    { study: 'Garcia & Lopez (2025)', algorithm: 'Contrastive + Probe', temporal: 'Self-supervised', features: '128 (embed)', anomalyDetection: '✗', uncertaintyMethod: 'None', explainability: 'Very Low', trainingSize: '70K' },
     { study: 'Thompson & White (2024)', algorithm: 'Bayesian Network', temporal: 'Cross-sectional', features: 24, anomalyDetection: '✗', uncertaintyMethod: 'Probabilistic', explainability: 'High (causal)', trainingSize: '20K' },
     { study: 'Yamamoto et al. (2024)', algorithm: 'NAS-optimized NN', temporal: 'Cross-sectional', features: 44, anomalyDetection: '✗', uncertaintyMethod: 'None', explainability: 'Very Low', trainingSize: '65K' },
     { study: 'Liu & Chen (2025)', algorithm: 'KG-GNN', temporal: 'Knowledge Graph', features: 39, anomalyDetection: '✗', uncertaintyMethod: 'None', explainability: 'Medium', trainingSize: '50K' },
@@ -974,16 +974,6 @@ function ComparisonSection() {
           <p><strong>Thompson, B., & White, J. (2024).</strong> "Probabilistic Graphical Models for Education Analytics." <em>Artificial Intelligence Review</em>, 57(4), 891-920. DOI: 10.1007/s10462-024-10432-5</p>
           <p><strong>Yamamoto, H., Suzuki, T., & Watanabe, M. (2024).</strong> "AutoML for Automated Early Warning System Design." <em>Expert Systems with Applications</em>, 237, 121456. DOI: 10.1016/j.eswa.2023.121456</p>
           <p><strong>Liu, W., & Chen, X. (2025).</strong> "Knowledge Graph Enhanced Dropout Prediction with GNNs." <em>The Web Conference (WWW 2025)</em>, pp. 1234-1248.</p>
-        </div>
-      </div>
-    </div>
-  )
-}
-        <div className="space-y-2 text-xs sm:text-sm text-slate-700">
-          <p><strong>Chen, L., Wang, Y., & Liu, X. (2024).</strong> "Uncertainty-Aware Deep Learning for Student Dropout Prediction." <em>IEEE Transactions on Learning Technologies</em>, 17(3), 412-427.</p>
-          <p><strong>Kumar, R., & Patel, S. (2024).</strong> "Explainable AI for Early Warning Systems in Higher Education." <em>Computers & Education</em>, 198, 104762.</p>
-          <p><strong>Zhang, H., Kim, J., & Anderson, M. (2025).</strong> "Multi-Modal Temporal Models for Dropout Risk Assessment." <em>Proceedings of Educational Data Mining (EDM 2025)</em>, pp. 89-104.</p>
-          <p><strong>Lee, D., & Johnson, T. (2024).</strong> "Federated Learning for Privacy-Preserving Dropout Prediction." <em>ACM SIGKDD Workshop on Education Data Mining</em>, pp. 34-45.</p>
         </div>
       </div>
     </div>
